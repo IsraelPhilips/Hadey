@@ -3,7 +3,7 @@
 from django.db import models
 from django.conf import settings
 
-# ... Application and Document models are unchanged ...
+# ... Application model is unchanged ...
 class Application(models.Model):
     class ApplicationStatus(models.TextChoices):
         STEP_1_APPLICATION_FORM = 'STEP_1_APPLICATION_FORM', 'Step 1: Application Form'
@@ -26,13 +26,22 @@ class Document(models.Model):
     class DocumentType(models.TextChoices):
         APPLICATION_FORM = 'APPLICATION_FORM', 'Application Form (Filled)'
         ADMISSION_LETTER = 'ADMISSION_LETTER', 'Admission Letter'
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='documents')
+        BLANK_FORM_TEMPLATE = 'BLANK_FORM_TEMPLATE', 'Blank Form Template'
+    application = models.ForeignKey(
+        Application, 
+        on_delete=models.CASCADE, 
+        related_name='documents',
+        blank=True,
+        null=True
+    )
     document_type = models.CharField(max_length=50, choices=DocumentType.choices)
     file = models.FileField(upload_to='documents/')
     is_admin_upload = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        return f"{self.get_document_type_display()} for {self.application.user.username}"
+        if self.application:
+            return f"{self.get_document_type_display()} for {self.application.user.username}"
+        return f"Global Document: {self.get_document_type_display()}"
 
 
 class Payment(models.Model):
@@ -40,21 +49,20 @@ class Payment(models.Model):
         PENDING = 'PENDING', 'Pending'
         SUCCESSFUL = 'SUCCESSFUL', 'Successful'
         FAILED = 'FAILED', 'Failed'
+        
     class PaymentPurpose(models.TextChoices):
         APPLICATION_FEE = 'APPLICATION_FEE', 'Application Fee'
         AGENCY_FEE_FULL = 'AGENCY_FEE_FULL', 'Agency Fee (Full)'
         AGENCY_FEE_HALF = 'AGENCY_FEE_HALF', 'Agency Fee (Half)'
+        # THIS IS THE LINE THAT FIXES THE ERROR
+        ADMISSION_FEE = 'ADMISSION_FEE', 'Admission Fee'
 
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
     purpose = models.CharField(max_length=50, choices=PaymentPurpose.choices)
-    
-    # UPDATED: Changed from paystack_reference to tx_ref for Flutterwave
     tx_ref = models.CharField(max_length=100, unique=True, blank=True)
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     def __str__(self):
         return f"{self.purpose} - {self.status} ({self.application.user.username})"

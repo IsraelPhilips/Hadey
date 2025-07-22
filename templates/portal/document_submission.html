@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Document Submission | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200">
+        <h1 class="text-2xl font-bold text-dark-green mb-2">Step 2: Admission Documents</h1>
+        <p class="text-gray-600 mb-6">Follow the steps below to submit your required documents.</p>
+
+        <!-- Section 1: Download Admin Form -->
+        <div class="mb-8 p-4 border rounded-md {% if admin_document %}border-primary-green{% else %}border-gray-300{% endif %}">
+            <h2 class="text-lg font-semibold text-dark-green mb-2">1. Download Your Application Form</h2>
+            {% if admin_document %}
+                <p class="text-sm text-gray-600 mb-3">The admin has uploaded the necessary form. Please download it, print, fill it out completely, and scan it.</p>
+                <a href="{{ admin_document.file.url }}" download class="inline-flex items-center px-4 py-2 bg-primary-green text-white font-semibold rounded-md hover:bg-dark-green transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    Download Form
+                </a>
+            {% else %}
+                <p class="text-sm text-amber-700 bg-amber-100 p-3 rounded-md">The admin has not uploaded your application form yet. Please check back later. You will be notified via email.</p>
+            {% endif %}
+        </div>
+
+        <!-- Section 2: Upload Your Filled Form -->
+        <div class="mb-8 p-4 border rounded-md border-gray-300" id="uploadSection">
+            <h2 class="text-lg font-semibold text-dark-green mb-2">2. Upload Your Completed Form</h2>
+            <p class="text-sm text-gray-600 mb-3">Once you have filled and scanned the form, upload the single PDF or image file here.</p>
+            <form method="post" enctype="multipart/form-data" id="documentUploadForm">
+                {% csrf_token %}
+                {{ form.file }}
+                <p class="mt-2 text-sm text-red-600" id="upload-error"></p>
+                <button type="submit" id="uploadBtn" class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-md font-medium text-white bg-accent-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-orange transition-colors">
+                    Upload Document
+                </button>
+            </form>
+        </div>
+        
+        <!-- Section 3: Pay Admission Fee -->
+        <div class="p-4 border rounded-md border-gray-300 opacity-50" id="paymentSection">
+            <h2 class="text-lg font-semibold text-dark-green mb-2">3. Pay Admission Letter Fee</h2>
+            <p class="text-sm text-gray-600 mb-3">After your document is uploaded, you can proceed with the payment for your admission letter processing.</p>
+            <button id="paymentBtn" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
+                Proceed to Payment
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+    const uploadForm = document.getElementById('documentUploadForm');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const paymentBtn = document.getElementById('paymentBtn');
+    const paymentSection = document.getElementById('paymentSection');
+    const uploadErrorEl = document.getElementById('upload-error');
+    
+    // CORRECTED: Get the CSRF token value from the hidden input in the form
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = 'Uploading...';
+        uploadErrorEl.textContent = '';
+
+        const formData = new FormData(uploadForm);
+
+        fetch("{% url 'portal:document_submission' %}", {
+            method: 'POST',
+            body: formData,
+            // The CSRF token is already in the formData, so no special header is needed here.
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                uploadBtn.innerHTML = 'Upload Successful!';
+                uploadBtn.classList.remove('bg-accent-orange');
+                uploadBtn.classList.add('bg-primary-green');
+                
+                paymentSection.classList.remove('opacity-50');
+                paymentBtn.disabled = false;
+                paymentBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                paymentBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+            } else {
+                uploadErrorEl.textContent = data.errors?.file?.[0] || 'An error occurred.';
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = 'Upload Document';
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            uploadErrorEl.textContent = 'A network error occurred. Please try again.';
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = 'Upload Document';
+        });
+    });
+
+    paymentBtn.addEventListener('click', function() {
+        paymentBtn.disabled = true;
+        paymentBtn.innerHTML = 'Initializing...';
+
+        const payload = {
+            purpose: 'ADMISSION_FEE'
+        };
+
+        fetch("{% url 'portal:initiate_payment' %}", {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: {
+                'Content-Type': 'application/json',
+                // CORRECTED: Use the token value we extracted earlier
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(paymentData => {
+            if (paymentData.error) {
+                throw new Error(paymentData.error);
+            }
+            FlutterwaveCheckout({
+                ...paymentData,
+                callback: function (data) {
+                    window.location.href = "{% url 'portal:dashboard' %}";
+                },
+                onclose: function() {
+                    paymentBtn.disabled = false;
+                    paymentBtn.innerHTML = 'Proceed to Payment';
+                },
+            });
+        })
+        .catch(error => {
+            console.error('Payment initiation error:', error);
+            paymentBtn.disabled = false;
+            paymentBtn.innerHTML = 'Proceed to Payment';
+        });
+    });
+</script>
+{% endblock %}
