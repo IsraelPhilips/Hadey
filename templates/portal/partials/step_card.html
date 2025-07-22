@@ -1,0 +1,54 @@
+{% comment %}
+This template is now much simpler. It receives a 'step' object from the view
+which already contains its title, number, and status ('completed', 'active', or 'pending').
+This removes all complex logic from the template.
+{% endcomment %}
+
+<div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 transition-all {% if step.status == 'pending' %}opacity-50{% endif %}">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <div class="flex items-center justify-center h-12 w-12 rounded-full font-bold text-xl 
+                {% if step.status == 'active' %}bg-primary-green text-white animate-pulse{% endif %}
+                {% if step.status == 'completed' %}bg-dark-green text-white{% endif %}
+                {% if step.status == 'pending' %}bg-gray-300 text-gray-600{% endif %}">
+                
+                {% if step.status == 'completed' %}
+                    <!-- Checkmark Icon for completed steps -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                {% else %}
+                    {{ step.number }}
+                {% endif %}
+            </div>
+            <div class="ml-4">
+                <h2 class="text-xl font-semibold 
+                    {% if step.status == 'pending' %}text-gray-500{% else %}text-dark-green{% endif %}">
+                    {{ step.title }}
+                </h2>
+                <p class="text-sm font-semibold
+                    {% if step.status == 'active' %}text-primary-green{% endif %}
+                    {% if step.status == 'completed' %}text-gray-500{% endif %}
+                    {% if step.status == 'pending' %}text-gray-500{% endif %}">
+                    {% if step.status == 'active' %}Current Step{% endif %}
+                    {% if step.status == 'completed' %}Completed{% endif %}
+                    {% if step.status == 'pending' %}Pending{% endif %}
+                </p>
+            </div>
+        </div>
+        
+        {% comment %} CORRECTED LOGIC IS HERE {% endcomment %}
+        {% with link_url=step.url_name|default:"#" %}
+            {% if step.status == 'active' or step.status == 'completed' %}
+                <a href="{% if link_url != '#' %}{% url link_url %}{% else %}#{% endif %}" 
+                   class="font-semibold 
+                          {% if step.status == 'active' %}text-primary-green hover:underline{% endif %}
+                          {% if step.status == 'completed' %}text-gray-500 hover:underline{% endif %}">
+                    {% if step.status == 'active' %}View Details{% else %}Review{% endif %}
+                </a>
+            {% else %}
+                <span class="text-gray-400 font-semibold cursor-not-allowed">Locked</span>
+            {% endif %}
+        {% endwith %}
+    </div>
+</div>

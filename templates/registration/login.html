@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200">
+        <h2 class="text-2xl font-bold text-center text-dark-green mb-6">Sign In to Your Account</h2>
+
+        {% if form.errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
+                <p>Your username and password didn't match. Please try again.</p>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm">
+                </div>
+                <div>
+                    <label for="id_password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" name="password" autocomplete="current-password" required id="id_password" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm">
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-green hover:bg-dark-green focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green transition-colors">
+                        Sign In
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

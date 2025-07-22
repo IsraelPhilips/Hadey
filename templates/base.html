@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hadey Travels Global{% endblock %}</title>
+
+    <!-- 1. Google Fonts: Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 2. Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 3. Configure Tailwind with our Brand Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-green': '#4AAB48',
+                        'dark-green': '#225529',
+                        'accent-orange': '#EF9623',
+                        'accent-yellow': '#FFD302',
+                    },
+                    fontFamily: {
+                        'sans': ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    {% load static %}
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <a href="#">
+                    <!-- We will replace this with the actual SVG logo later -->
+                    <h1 class="text-2xl font-bold text-dark-green">
+                        HTG
+                    </h1>
+                </a>
+            </div>
+            <div>
+                <!-- Navigation links will go here -->
+                <a href="#" class="text-gray-700 hover:text-primary-green mx-4">Dashboard</a>
+                <a href="#" class="text-gray-700 hover:text-primary-green mx-4">Profile</a>
+                <a href="{% url 'logout' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        {% block content %}
+            <!-- Page-specific content will be injected here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-12 py-6">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p>&copy; {% now "Y" %} Hadey Travels Global. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

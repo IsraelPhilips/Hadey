@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <!-- Welcome Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-dark-green">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
+        <p class="text-gray-600 mt-1">Your application progress is saved. Complete each step to proceed.</p>
+    </div>
+
+    <!-- Application Steps -->
+    <div class="space-y-4">
+        {% for step in steps %}
+            {% include "portal/partials/step_card.html" with step=step %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
