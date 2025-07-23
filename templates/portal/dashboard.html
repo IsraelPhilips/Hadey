@@ -3,19 +3,25 @@
 {% block title %}Dashboard | Hadey Travels Global{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-5xl mx-auto">
     
-    <!-- Welcome Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-dark-green">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
-        <p class="text-gray-600 mt-1">Your application progress is saved. Complete each step to proceed.</p>
+    <!-- Welcome Header Banner -->
+    <div class="bg-dark-green p-8 rounded-xl shadow-lg mb-10 text-white relative overflow-hidden">
+        <div class="absolute -top-4 -right-4 w-32 h-32 bg-primary-green/30 rounded-full"></div>
+        <div class="absolute -bottom-8 -left-2 w-40 h-40 bg-primary-green/30 rounded-full"></div>
+        
+        <div class="relative z-10">
+            <h1 class="text-3xl font-bold">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
+            <p class="text-green-100 mt-1">Your application journey is mapped out below. Let's get started.</p>
+        </div>
     </div>
 
     <!-- Application Steps -->
-    <div class="space-y-4">
+    <div class="space-y-5">
         {% for step in steps %}
             {% include "portal/partials/step_card.html" with step=step %}
         {% endfor %}
     </div>
+
 </div>
 {% endblock %}

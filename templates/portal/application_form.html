@@ -4,27 +4,29 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200">
-        <h1 class="text-2xl font-bold text-dark-green mb-2">Step 1: Your Application Details</h1>
-        <p class="text-gray-600 mb-6">Please fill in your information accurately. After submitting, you will be prompted for the application fee payment.</p>
+    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-green">
+        <div class="text-center mb-8">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-green text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </div>
+            <h1 class="text-2xl font-bold text-dark-green mt-4">Step 1: Your Application Details</h1>
+            <p class="text-gray-600 mt-1">Please fill in your information accurately. This can be updated later. An intial fee of $15 is required.</p>
+        </div>
         
-        <!-- We give the form an ID to easily select it with JavaScript -->
         <form method="post" id="applicationForm">
             {% csrf_token %}
             <div class="space-y-6">
-                
                 {% for field in form %}
                 <div>
                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
                     {{ field }}
-                    <p class="mt-2 text-sm text-red-600" id="error-{{ field.auto_id }}"></p> {# Placeholder for field-specific errors #}
+                    <p class="mt-2 text-sm text-red-600" id="error-{{ field.auto_id }}"></p>
                 </div>
                 {% endfor %}
 
                 <div class="pt-4">
-                    <!-- Add an ID to the button to show a loading state -->
                     <button type="submit" id="submitBtn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-primary-green hover:bg-dark-green focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green transition-colors">
-                        Save and Proceed to Payment (NGN20,000)
+                        Save and Proceed to Payment
                     </button>
                 </div>
             </div>
@@ -32,50 +34,31 @@
     </div>
 </div>
 
-<!-- 1. Flutterwave Checkout Library -->
+<!-- AJAX script from previous step remains unchanged -->
 <script src="https://checkout.flutterwave.com/v3.js"></script>
-
-<!-- 2. Our Custom AJAX and Payment Logic -->
 <script>
     const form = document.getElementById('applicationForm');
     const submitBtn = document.getElementById('submitBtn');
-
     form.addEventListener('submit', function(event) {
-        // Prevent the default page reload on submission
         event.preventDefault();
-        
-        // Show a loading state on the button
         submitBtn.disabled = true;
         submitBtn.innerHTML = 'Saving...';
-
-        // Clear previous errors
         document.querySelectorAll('[id^="error-"]').forEach(el => el.textContent = '');
-
         const formData = new FormData(form);
-
-        // --- Step 1: Submit the form data to our backend ---
         fetch("{% url 'portal:application_form' %}", {
             method: 'POST',
             body: formData,
-            headers: {
-                // The CSRF token is in the form data, so this might not be strictly
-                // necessary, but it's good practice.
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-            }
+            headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')}
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // --- Step 2: If form is valid, initiate payment ---
                 submitBtn.innerHTML = 'Redirecting to Payment...';
                 initiatePayment();
             } else {
-                // Handle form errors
                 for (const [field, errors] of Object.entries(data.errors)) {
                     const errorEl = document.getElementById(`error-id_${field}`);
-                    if (errorEl) {
-                        errorEl.textContent = errors.join(', ');
-                    }
+                    if (errorEl) { errorEl.textContent = errors.join(', '); }
                 }
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Save and Proceed to Payment';
@@ -87,25 +70,19 @@
             submitBtn.innerHTML = 'Save and Proceed to Payment';
         });
     });
-
     function initiatePayment() {
-        // --- Step 3: Fetch payment details from our backend ---
+        const payload = { purpose: 'APPLICATION_FEE' };
         fetch("{% url 'portal:initiate_payment' %}", {
-            method: 'GET',
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
         })
         .then(response => response.json())
         .then(paymentData => {
-            // --- Step 4: Use payment data to open Flutterwave popup ---
             FlutterwaveCheckout({
-                ...paymentData, // Spread the data we got from the backend
-                callback: function (data) {
-                    // This is called after the payment is closed.
-                    // The actual verification happens in our webhook.
-                    // We just redirect to the dashboard.
-                    window.location.href = "{% url 'portal:dashboard' %}";
-                },
+                ...paymentData,
+                callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
                 onclose: function() {
-                    // This is called if the user closes the popup
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'Save and Proceed to Payment';
                 },
@@ -118,5 +95,4 @@
         });
     }
 </script>
-
 {% endblock %}

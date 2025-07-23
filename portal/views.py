@@ -108,7 +108,7 @@ def initiate_payment(request):
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     application = request.user.application
-    currency = 'NGN'
+    currency = 'USD'
     if purpose == 'APPLICATION_FEE':
         amount = 15.00
         payment_purpose = Payment.PaymentPurpose.APPLICATION_FEE
