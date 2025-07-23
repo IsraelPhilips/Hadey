@@ -138,3 +138,23 @@ LOGIN_REDIRECT_URL = 'portal:dashboard'
 
 FLUTTERWAVE_SECRET_KEY = 'FLWSECK_TEST-e5f3348a7e839e075bc24ac2ea3db90f-X'
 FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK_TEST-a8fbd72393c171b9c50441bf10bc369d-X'
+
+
+# --- EMAIL CONFIGURATION ---
+# For development, we print emails to the console.
+# For production, you would change this to 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For a real SMTP server (like SendGrid, Mailgun, or Gmail) in production,
+# you would uncomment and fill these out, preferably using environment variables.
+# EMAIL_HOST = os.environ.get('EMAIL_HOST')
+# EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+# EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() == 'true'
+# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+# The default email address for outgoing mail.
+DEFAULT_FROM_EMAIL = 'Hadey Travels Global <no-reply@hadeytravels.com>'
+
+# The email address that receives admin notifications.
+ADMIN_EMAIL = 'admin@hadeytravels.com'

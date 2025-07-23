@@ -1,0 +1,14 @@
+Subject: Your Admission Letter is Ready!
+
+Hi {{ user.username }},
+
+Great news! Your admission letter has been processed and is now ready.
+
+Please log in to your dashboard to proceed with the Agency Fee payment to download your letter.
+
+Dashboard Link: {{ dashboard_url }}
+
+Congratulations on this significant step!
+
+Best regards,
+The HTG Team

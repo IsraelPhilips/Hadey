@@ -1,0 +1,16 @@
+Subject: New Payment Received: {{ payment.get_purpose_display }} from {{ user.username }}
+
+Admin Notification,
+
+A new payment has been successfully processed.
+
+Details:
+- User: {{ user.username }} ({{ user.email }})
+- Amount: ${{ payment.amount }}
+- Purpose: {{ payment.get_purpose_display }}
+- Transaction Reference: {{ payment.tx_ref }}
+- Time: {% now "Y-m-d H:i" %}
+
+The user's application status has been automatically updated.
+
+No action is required unless specified by the process.

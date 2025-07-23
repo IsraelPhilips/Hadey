@@ -1,0 +1,14 @@
+Subject: Your Payment to Hadey Travels Global was Successful!
+
+Hi {{ user.username }},
+
+This is a confirmation that your payment for "{{ payment.get_purpose_display }}" of ${{ payment.amount }} was successful.
+
+Your application has been updated, and you can view your current status by logging into your dashboard.
+
+Dashboard Link: {{ dashboard_url }}
+
+Thank you for choosing Hadey Travels Global.
+
+Best regards,
+The HTG Team
