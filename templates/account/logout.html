@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Sign Out" %} | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+    <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200 text-center">
+        <h2 class="text-2xl font-bold text-dark-green mb-4">{% trans "Confirm Sign Out" %}</h2>
+        <p class="text-gray-600 mb-6">{% trans "Are you sure you want to sign out?" %}</p>
+        
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <div class="flex flex-col sm:flex-row-reverse gap-3">
+                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                    {% trans 'Sign Out' %}
+                </button>
+                <a href="{% url 'portal:dashboard' %}" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+    

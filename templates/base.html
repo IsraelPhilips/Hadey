@@ -34,24 +34,25 @@
 
     {% load static %}
 </head>
-<body class="bg-gray-50 font-sans antialiased">
+<body class="bg-gradient-to-br from-gray-50 to-green-50 font-sans antialiased">
     
     <!-- Header -->
-    <header class="bg-white shadow-sm">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <header class="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div>
-                <a href="#">
-                    <!-- We will replace this with the actual SVG logo later -->
-                    <h1 class="text-2xl font-bold text-dark-green">
-                        HTG
-                    </h1>
+                <a href="{% if user.is_authenticated %}{% url 'portal:dashboard' %}{% else %}{% url 'account_login' %}{% endif %}">
+                    <!-- Load the logo from our new static files directory -->
+                    <img src="{% static 'images/logo.png' %}" alt="Hadey Travels Global Logo" class="h-12">
                 </a>
             </div>
             <div>
-                <!-- Navigation links will go here -->
-                <a href="#" class="text-gray-700 hover:text-primary-green mx-4">Dashboard</a>
-                <a href="#" class="text-gray-700 hover:text-primary-green mx-4">Profile</a>
-                <a href="{% url 'logout' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Logout</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'portal:dashboard' %}" class="text-gray-700 hover:text-primary-green mx-4">Dashboard</a>
+                    <a href="{% url 'account_logout' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Logout</a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-primary-green mx-4">Sign In</a>
+                    <a href="{% url 'account_signup' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Sign Up</a>
+                {% endif %}
             </div>
         </nav>
     </header>
@@ -64,7 +65,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white mt-12 py-6">
+    <footer class="bg-transparent mt-12 py-6">
         <div class="container mx-auto px-6 text-center text-gray-600">
             <p>&copy; {% now "Y" %} Hadey Travels Global. All Rights Reserved.</p>
         </div>

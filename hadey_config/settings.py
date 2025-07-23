@@ -41,7 +41,15 @@ INSTALLED_APPS = [
 
     #apps
     'portal',
+
+    # Allauth apps
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # Optional: 'allauth.socialaccount.providers.google', 
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -51,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'hadey_config.urls'
@@ -74,6 +83,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'hadey_config.wsgi.application'
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 
 # Database
@@ -120,8 +137,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
+# This is the URL that static files will be served from.
+STATIC_URL = '/static/'
 
-STATIC_URL = 'static/'
+# THIS IS THE CRUCIAL LINE WE WERE MISSING.
+# It tells Django to look for static files in a 'static' directory
+# at the root of the project.
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# This is for production, where 'collectstatic' will gather all files.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # The base URL to serve media files from
 MEDIA_URL = '/media/'
@@ -136,9 +161,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = 'portal:dashboard'
 
+ACCOUNT_LOGOUT_ON_GET = False
+
 FLUTTERWAVE_SECRET_KEY = 'FLWSECK_TEST-e5f3348a7e839e075bc24ac2ea3db90f-X'
 FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK_TEST-a8fbd72393c171b9c50441bf10bc369d-X'
 
+# --- ALLAUTH CONFIGURATION ---
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False # We will use email as the primary identifier
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory' # 'mandatory' or 'optional' or 'none'
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_FORMS = {'signup': 'portal.forms.CustomSignupForm'}
 
 # --- EMAIL CONFIGURATION ---
 # For development, we print emails to the console.
