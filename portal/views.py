@@ -12,21 +12,21 @@ from django.conf import settings
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from .models import Application, Payment, Document
-from .forms import ApplicationForm, DocumentUploadForm
+from .models import Application, Payment, Document, Testimonial
+from .forms import ApplicationForm, DocumentUploadForm, TestimonialForm
 
+# ... dashboard, application_form_view, document_submission_view, agency_fee_view, initiate_payment, and flutterwave_webhook views are unchanged ...
 @login_required
 def dashboard(request):
     application, _ = Application.objects.get_or_create(user=request.user)
     ALL_STEPS = [
         {'id': Application.ApplicationStatus.STEP_1_APPLICATION_FORM, 'title': 'Application Form', 'number': 1, 'url_name': 'portal:application_form'},
-        {'id': Application.ApplicationStatus.STEP_2_ADMISSION_FEE, 'title': 'Admission Letter Fee', 'number': 2, 'url_name': 'portal:document_submission'},
+        {'id': Application.ApplicationStatus.STEP_2_ADMISSION_FEE, 'title': 'Admission Form', 'number': 2, 'url_name': 'portal:document_submission'},
         {'id': Application.ApplicationStatus.STEP_3_AGENCY_FEE, 'title': 'Agency Fee', 'number': 3, 'url_name': 'portal:agency_fee'},
         {'id': Application.ApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': 'portal:visa_application'},
     ]
     current_status = application.status
     try:
-        # Handle the COMPLETED status by pointing to the last step's index
         if current_status == Application.ApplicationStatus.COMPLETED:
             current_index = len(ALL_STEPS)
         else:
@@ -48,7 +48,6 @@ def dashboard(request):
 
 @login_required
 def application_form_view(request):
-    # ... view is unchanged ...
     application, _ = Application.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         form = ApplicationForm(request.POST, instance=application)
@@ -63,7 +62,6 @@ def application_form_view(request):
 
 @login_required
 def document_submission_view(request):
-    # ... view is unchanged ...
     application = request.user.application
     admin_document = Document.objects.filter(application__isnull=True, is_admin_upload=True, document_type=Document.DocumentType.BLANK_FORM_TEMPLATE).order_by('-uploaded_at').first()
     if request.method == 'POST':
@@ -82,7 +80,6 @@ def document_submission_view(request):
 
 @login_required
 def agency_fee_view(request):
-    # ... view is unchanged ...
     application = request.user.application
     admission_letter = Document.objects.filter(application=application, document_type=Document.DocumentType.ADMISSION_LETTER, is_admin_upload=True).first()
     context = {'application': application, 'admission_letter': admission_letter}
@@ -91,24 +88,50 @@ def agency_fee_view(request):
 @login_required
 def visa_application_view(request):
     """
-    Displays the final step with instructions for the visa application.
+    Displays the final step with visa updates and a testimonial form.
     """
     application = request.user.application
-    context = {'application': application}
-    return render(request, 'portal/visa_application.html', context)
+    
+    if request.method == 'POST':
+        # Check if a testimonial already exists to prevent re-submission
+        if Testimonial.objects.filter(application=application).exists():
+            return JsonResponse({'success': False, 'message': 'You have already submitted a testimonial.'}, status=400)
+        
+        form = TestimonialForm(request.POST)
+        if form.is_valid():
+            testimonial = form.save(commit=False)
+            testimonial.application = application
+            testimonial.save()
+            # Mark the application as fully completed
+            application.status = Application.ApplicationStatus.COMPLETED
+            application.save()
+            return JsonResponse({'success': True, 'message': 'Thank you for your feedback!'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
+    # Fetch all data needed for the page
+    visa_updates = application.visa_updates.all()
+    testimonial = Testimonial.objects.filter(application=application).first()
+    form = TestimonialForm(instance=testimonial)
+
+    context = {
+        'application': application,
+        'visa_updates': visa_updates,
+        'testimonial_form': form,
+        'testimonial': testimonial,
+    }
+    return render(request, 'portal/visa_application.html', context)
 
 @login_required
 @require_POST
 def initiate_payment(request):
-    # ... view is unchanged ...
     try:
         data = json.loads(request.body)
         purpose = data.get('purpose')
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON'}, status=400)
     application = request.user.application
-    currency = 'USD'
+    currency = 'NGN'
     if purpose == 'APPLICATION_FEE':
         amount = 15.00
         payment_purpose = Payment.PaymentPurpose.APPLICATION_FEE
@@ -143,7 +166,6 @@ def initiate_payment(request):
 
 @csrf_exempt
 def flutterwave_webhook(request):
-    # ... view is unchanged ...
     tx_ref = None
     transaction_id = None
     if request.method == 'POST':
