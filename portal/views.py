@@ -48,17 +48,47 @@ def dashboard(request):
 
 @login_required
 def application_form_view(request):
+    """
+    Handles the display and submission of the comprehensive application form.
+    """
     application, _ = Application.objects.get_or_create(user=request.user)
+    
     if request.method == 'POST':
-        form = ApplicationForm(request.POST, instance=application)
+        form = ApplicationForm(request.POST, request.FILES, instance=application)
         if form.is_valid():
-            form.save()
+            # Save the main application data
+            application_instance = form.save(commit=False)
+
+            # Handle the passport photograph separately
+            if 'passport_photograph_upload' in request.FILES:
+                application_instance.passport_photograph = request.FILES['passport_photograph_upload']
+            
+            application_instance.save()
+
+            # Handle the other required document uploads
+            document_uploads = {
+                'international_passport_upload': Document.DocumentType.INTERNATIONAL_PASSPORT,
+                'school_certificate_upload': Document.DocumentType.SCHOOL_CERTIFICATE,
+                'birth_certificate_upload': Document.DocumentType.BIRTH_CERTIFICATE,
+            }
+
+            for field_name, doc_type in document_uploads.items():
+                if field_name in request.FILES:
+                    # Get or create a document record to avoid duplicates on re-submission
+                    Document.objects.update_or_create(
+                        application=application_instance,
+                        document_type=doc_type,
+                        defaults={'file': request.FILES[field_name]}
+                    )
+
             return JsonResponse({'success': True, 'message': 'Application saved successfully!'})
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = ApplicationForm(instance=application)
+        
     return render(request, 'portal/application_form.html', {'form': form})
+
 
 @login_required
 def document_submission_view(request):
@@ -166,47 +196,52 @@ def initiate_payment(request):
 
 @csrf_exempt
 def flutterwave_webhook(request):
+    print('I was called!')
     tx_ref = None
     transaction_id = None
     if request.method == 'POST':
         try:
             payload = json.loads(request.body)
+            print(payload)
             tx_ref = payload.get('data', {}).get('tx_ref')
             transaction_id = payload.get('data', {}).get('id')
         except json.JSONDecodeError:
+            print('400 from here 1')
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON in POST request'}, status=400)
     if not tx_ref:
         tx_ref = request.GET.get('tx_ref')
         transaction_id = request.GET.get('transaction_id')
     if not tx_ref or not transaction_id:
+        print('400 from here 2')
         return JsonResponse({'status': 'error', 'message': 'Missing transaction reference or ID'}, status=400)
     url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
     headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        if data.get('status') == 'success':
-            payment_data = data.get('data', {})
-            payment = Payment.objects.get(tx_ref=payment_data.get('tx_ref'))
-            if float(payment_data.get('amount')) == float(payment.amount) and payment.status == Payment.PaymentStatus.PENDING:
-                payment.status = Payment.PaymentStatus.SUCCESSFUL
-                payment.save()
-                application = payment.application
-                if payment.purpose == Payment.PaymentPurpose.APPLICATION_FEE:
-                    application.status = Application.ApplicationStatus.STEP_2_ADMISSION_FEE
-                elif payment.purpose == Payment.PaymentPurpose.ADMISSION_FEE:
-                    application.status = Application.ApplicationStatus.STEP_3_AGENCY_FEE
-                elif payment.purpose in [Payment.PaymentPurpose.AGENCY_FEE_FULL, Payment.PaymentPurpose.AGENCY_FEE_HALF]:
-                    application.status = Application.ApplicationStatus.STEP_4_VISA_APPLICATION
-                application.save()
-                user = application.user
-                context = {'user': user, 'payment': payment, 'dashboard_url': request.build_absolute_uri(reverse('portal:dashboard'))}
-                user_email_body = render_to_string('portal/emails/payment_successful_user.txt', context)
-                send_mail(subject='Your Payment to Hadey Travels Global was Successful!', message=user_email_body, from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email], fail_silently=False)
-                admin_email_body = render_to_string('portal/emails/payment_successful_admin.txt', context)
-                send_mail(subject=f'New Payment Received: {payment.get_purpose_display()} from {user.username}', message=admin_email_body, from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[settings.ADMIN_EMAIL], fail_silently=False)
-                return redirect('portal:dashboard')
-    except (requests.RequestException, Payment.DoesNotExist) as e:
-        pass
+    # try:
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    data = response.json()
+    print(data)
+    if data.get('status') == 'success':
+        payment_data = data.get('data', {})
+        payment = Payment.objects.get(tx_ref=payment_data.get('tx_ref'))
+        if float(payment_data.get('amount')) == float(payment.amount) and payment.status == Payment.PaymentStatus.PENDING:
+            payment.status = Payment.PaymentStatus.SUCCESSFUL
+            payment.save()
+            application = payment.application
+            if payment.purpose == Payment.PaymentPurpose.APPLICATION_FEE:
+                application.status = Application.ApplicationStatus.STEP_2_ADMISSION_FEE
+            elif payment.purpose == Payment.PaymentPurpose.ADMISSION_FEE:
+                application.status = Application.ApplicationStatus.STEP_3_AGENCY_FEE
+            elif payment.purpose in [Payment.PaymentPurpose.AGENCY_FEE_FULL, Payment.PaymentPurpose.AGENCY_FEE_HALF]:
+                application.status = Application.ApplicationStatus.STEP_4_VISA_APPLICATION
+            application.save()
+            user = application.user
+            context = {'user': user, 'payment': payment, 'dashboard_url': request.build_absolute_uri(reverse('portal:dashboard'))}
+            user_email_body = render_to_string('portal/emails/payment_successful_user.txt', context)
+            send_mail(subject='Your Payment to Hadey Travels Global was Successful!', message=user_email_body, from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[user.email], fail_silently=False)
+            admin_email_body = render_to_string('portal/emails/payment_successful_admin.txt', context)
+            send_mail(subject=f'New Payment Received: {payment.get_purpose_display()} from {user.username}', message=admin_email_body, from_email=settings.DEFAULT_FROM_EMAIL, recipient_list=[settings.ADMIN_EMAIL], fail_silently=False)
+            return redirect('portal:dashboard')
+    # except (requests.RequestException, Payment.DoesNotExist) as e:
+    #     print('went here')
     return redirect('portal:dashboard')

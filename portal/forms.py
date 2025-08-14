@@ -13,16 +13,57 @@ class CustomSignupForm(SignupForm):
             field.help_text = ''
 
 class ApplicationForm(forms.ModelForm):
-    # ... unchanged ...
+    """
+    A comprehensive form for the entire Step 1 application.
+    """
+    passport_photograph_upload = forms.ImageField(required=True, label="Passport Photograph")
+    international_passport_upload = forms.FileField(required=True, label="International Passport")
+    school_certificate_upload = forms.FileField(required=True, label="WAEC or NECO Certificate")
+    birth_certificate_upload = forms.FileField(required=True, label="Birth Certificate")
+
     class Meta:
         model = Application
-        fields = ['full_name', 'email', 'phone_number', 'country_of_interest']
+        fields = [
+            # Personal Info
+            'full_name', 'date_of_birth', 'place_of_birth', 'gender', 'nationality', 
+            'address', 'city', 'postal_code', 'phone_number', 'email',
+            # Parent/Guardian Info
+            'father_name', 'father_occupation', 'father_contact', 'mother_name', 
+            'mother_occupation', 'mother_contact', 'guardian_name', 
+            'guardian_relationship', 'guardian_contact',
+            # Academic Info
+            'grade_level', 'preferred_program', 'previous_school', 
+            'country_applying_from', 'country_of_interest', 'achievements',
+            # Emergency Contact
+            'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_number',
+            # Medical Info
+            'medical_conditions', 'allergies',
+            # Additional Info
+            'how_did_you_hear', 'declaration_agreed'
+        ]
         widgets = {
-            'full_name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'}),
-            'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'}),
-            'phone_number': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'}),
-            'country_of_interest': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm', 'placeholder': 'e.g., Poland, Hungary, etc.'}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'declaration_agreed': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-primary-green focus:ring-primary-green border-gray-300 rounded'}),
+            'achievements': forms.Textarea(attrs={'rows': 3}),
+            'medical_conditions': forms.Textarea(attrs={'rows': 3}),
+            'allergies': forms.Textarea(attrs={'rows': 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationForm, self).__init__(*args, **kwargs)
+        # Apply Tailwind classes to all fields
+        text_based_inputs = ['text', 'email', 'date', 'password', 'number']
+        for field_name, field in self.fields.items():
+            # CORRECTED: Check if the widget has 'input_type' before accessing it
+            if hasattr(field.widget, 'input_type') and field.widget.input_type in text_based_inputs:
+                field.widget.attrs.update({
+                    'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'
+                })
+            elif isinstance(field.widget, forms.Textarea):
+                 field.widget.attrs.update({
+                    'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'
+                })
+
 
 class DocumentUploadForm(forms.ModelForm):
     # ... unchanged ...

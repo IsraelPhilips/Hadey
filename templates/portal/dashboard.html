@@ -6,10 +6,21 @@
 <div class="max-w-5xl mx-auto">
     
     <!-- Welcome Header Banner -->
-    <div class="bg-dark-green p-8 rounded-xl shadow-lg mb-10 text-white relative overflow-hidden">
+    <div class="bg-dark-green p-8 rounded-xl shadow-lg mb-10 text-white relative overflow-hidden flex items-center space-x-6">
         <div class="absolute -top-4 -right-4 w-32 h-32 bg-primary-green/30 rounded-full"></div>
         <div class="absolute -bottom-8 -left-2 w-40 h-40 bg-primary-green/30 rounded-full"></div>
         
+        <!-- User Profile Picture -->
+        <div class="relative z-10 flex-shrink-0">
+            {% if application.passport_photograph %}
+                <img src="{{ application.passport_photograph.url }}" alt="Profile Picture" class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md">
+            {% else %}
+                <div class="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                </div>
+            {% endif %}
+        </div>
+
         <div class="relative z-10">
             <h1 class="text-3xl font-bold">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
             <p class="text-green-100 mt-1">Your application journey is mapped out below. Let's get started.</p>

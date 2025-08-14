@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vzya^+$kp8p5#kyxo3r*kc#qym!f87-!4kdf-(r67u!z_)5(=#'
-
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-vzya^+$kp8p5#kyxo3r*kc#qym!f87-!4kdf-(r67u!z_)5(=#')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -103,6 +105,20 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.environ.get('DB_NAME'),
+#         'USER': os.environ.get('DB_USER'),
+#         'PASSWORD': os.environ.get('DB_PASSWORD'),
+#         'HOST': os.environ.get('DB_HOST', 'localhost'),
+#         'PORT': '3306',
+#         'OPTIONS': {
+#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+#         }
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -164,7 +180,7 @@ LOGIN_REDIRECT_URL = 'portal:dashboard'
 ACCOUNT_LOGOUT_ON_GET = False
 
 FLUTTERWAVE_SECRET_KEY = 'FLWSECK_TEST-e5f3348a7e839e075bc24ac2ea3db90f-X'
-FLUTTERWAVE_PUBLIC_KEY = 'FLWPUBK_TEST-a8fbd72393c171b9c50441bf10bc369d-X'
+FLUTTERWAVE_PUBLIC_KEY = os.environ.get('FLUTTERWAVE_PUBLIC_KEY')
 
 # --- ALLAUTH CONFIGURATION ---
 ACCOUNT_EMAIL_REQUIRED = True
@@ -177,18 +193,19 @@ ACCOUNT_FORMS = {'signup': 'portal.forms.CustomSignupForm'}
 # --- EMAIL CONFIGURATION ---
 # For development, we print emails to the console.
 # For production, you would change this to 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # For a real SMTP server (like SendGrid, Mailgun, or Gmail) in production,
 # you would uncomment and fill these out, preferably using environment variables.
-# EMAIL_HOST = os.environ.get('EMAIL_HOST')
-# EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-# EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() == 'true'
-# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = 'mail.hadeytravelsglobal.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 # The default email address for outgoing mail.
-DEFAULT_FROM_EMAIL = 'Hadey Travels Global <no-reply@hadeytravels.com>'
+DEFAULT_FROM_EMAIL = 'Hadey Travels Global <info@hadeytravelsglobal.com>'
 
 # The email address that receives admin notifications.
-ADMIN_EMAIL = 'admin@hadeytravels.com'
+ADMIN_EMAIL = 'info@hadeytravels.com'

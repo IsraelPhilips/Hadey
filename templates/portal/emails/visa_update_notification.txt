@@ -1,0 +1,17 @@
+Subject: An Update on Your Visa Application
+
+Hi {{ user.username }},
+
+We have a new update regarding your visa application.
+
+Update: {{ update.status_title }}
+Details: {{ update.details }}
+
+You can view your full timeline by logging into your dashboard.
+
+Dashboard Link: {{ dashboard_url }}
+
+We will keep you informed of any further progress.
+
+Best regards,
+The HTG Team
