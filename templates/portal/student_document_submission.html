@@ -1,17 +1,15 @@
 {% extends "base.html" %}
-
 {% block title %}Student Document Submission | Hadey Travels Global{% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto">
     <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-green">
         <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-dark-green">Step 2: Admission Documents & Fee</h1>
+            <h1 class="text-2xl font-bold text-dark-green">Step 2: Admission Form</h1>
             <p class="text-gray-600 mt-1">Follow the steps below to submit your required documents.</p>
         </div>
 
         <div class="space-y-6">
-            <!-- Section 1: Download Admin Form -->
             <div class="p-5 border rounded-lg bg-gray-50">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-primary-green text-white font-bold text-lg">1</div>
@@ -30,7 +28,6 @@
                 </div>
             </div>
 
-            <!-- Section 2: Upload Your Filled Form -->
             <div class="p-5 border rounded-lg bg-gray-50" id="uploadSection">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-primary-green text-white font-bold text-lg">2</div>
@@ -49,7 +46,7 @@
                 </div>
             </div>
             
-            <!-- Section 3: Pay Admission Fee -->
+            {% if not payment_made %}
             <div class="p-5 border rounded-lg bg-gray-50 opacity-50" id="paymentSection">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-primary-green text-white font-bold text-lg">3</div>
@@ -66,6 +63,12 @@
                     </div>
                 </div>
             </div>
+            {% else %}
+            <div class="p-5 border rounded-lg bg-green-50 text-center">
+                 <h2 class="text-lg font-semibold text-dark-green">Payment Complete</h2>
+                 <p class="text-sm text-gray-600 mt-1">The admission form fee has been paid successfully.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -86,13 +89,16 @@
         uploadBtn.innerHTML = 'Uploading...';
         uploadErrorEl.textContent = '';
         const formData = new FormData(uploadForm);
-        fetch("{% url 'portal:student_document_submission' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken }})
+        fetch("{% url 'portal:student_document_submission' %}", { method: 'POST', body: formData })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                uploadBtn.innerHTML = 'Upload Successful!';
-                uploadBtn.disabled = true;
-                paymentSection.classList.remove('opacity-50');
+                uploadBtn.innerHTML = 'Re-upload Document';
+                uploadBtn.disabled = false;
+                if (paymentSection) {
+                    paymentSection.classList.remove('opacity-50');
+                }
+                alert('Document uploaded successfully!');
             } else {
                 uploadErrorEl.textContent = data.errors?.file?.[0] || 'An error occurred during upload.';
                 uploadBtn.disabled = false;
@@ -101,36 +107,38 @@
         });
     });
 
-    consentCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            paymentBtn.disabled = false;
-            paymentBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            paymentBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
-        } else {
-            paymentBtn.disabled = true;
-            paymentBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            paymentBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
-        }
-    });
+    if (paymentBtn) {
+        consentCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                paymentBtn.disabled = false;
+                paymentBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                paymentBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+            } else {
+                paymentBtn.disabled = true;
+                paymentBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                paymentBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+            }
+        });
 
-    paymentBtn.addEventListener('click', function() {
-        const originalText = paymentBtn.innerHTML;
-        paymentBtn.disabled = true;
-        paymentBtn.innerHTML = 'Initializing...';
-        const payload = { purpose: 'ADMISSION_FEE' };
-        fetch("{% url 'portal:initiate_payment' %}", { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }})
-        .then(response => response.json())
-        .then(paymentData => {
-            if (paymentData.error) { throw new Error(paymentData.error); }
-            FlutterwaveCheckout({
-                ...paymentData,
-                callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
-                onclose: function() {
-                    paymentBtn.disabled = false;
-                    paymentBtn.innerHTML = originalText;
-                },
+        paymentBtn.addEventListener('click', function() {
+            const originalText = paymentBtn.innerHTML;
+            paymentBtn.disabled = true;
+            paymentBtn.innerHTML = 'Initializing...';
+            const payload = { purpose: 'ADMISSION_FEE' };
+            fetch("{% url 'portal:initiate_payment' %}", { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }})
+            .then(response => response.json())
+            .then(paymentData => {
+                if (paymentData.error) { throw new Error(paymentData.error); }
+                FlutterwaveCheckout({
+                    ...paymentData,
+                    callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
+                    onclose: function() {
+                        paymentBtn.disabled = false;
+                        paymentBtn.innerHTML = originalText;
+                    },
+                });
             });
         });
-    });
+    }
 </script>
 {% endblock %}

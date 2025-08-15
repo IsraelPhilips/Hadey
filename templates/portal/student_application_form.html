@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load portal_extras %}
 {% block title %}Student Application Form | Hadey Travels Global{% endblock %}
 
 {% block content %}
@@ -102,9 +102,51 @@
                     <h2 class="text-xl font-semibold text-dark-green mb-4">6. Additional Information & Documents</h2>
                     <div class="space-y-6">
                         <div><label class="block text-sm font-medium text-gray-700">How did you hear about us? <span class="text-red-500">*</span></label>{{ form.how_did_you_hear }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">International Passport <span class="text-red-500">*</span></label>{{ form.international_passport_upload }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">WAEC or NECO Certificate <span class="text-red-500">*</span></label>{{ form.school_certificate_upload }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Birth Certificate <span class="text-red-500">*</span></label>{{ form.birth_certificate_upload }}</div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">International Passport <span class="text-red-500">*</span></label>
+                            {% with doc=existing_docs|get_item:doc_types.INTERNATIONAL_PASSPORT %}
+                            {% if doc %}
+                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                    <label for="id_international_passport_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                                </div>
+                                <input type="file" name="international_passport_upload" id="id_international_passport_upload" class="hidden">
+                            {% else %}
+                                {{ form.international_passport_upload }}
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">WAEC or NECO Certificate <span class="text-red-500">*</span></label>
+                            {% with doc=existing_docs|get_item:doc_types.SCHOOL_CERTIFICATE %}
+                            {% if doc %}
+                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                    <label for="id_school_certificate_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                                </div>
+                                <input type="file" name="school_certificate_upload" id="id_school_certificate_upload" class="hidden">
+                            {% else %}
+                                {{ form.school_certificate_upload }}
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Birth Certificate <span class="text-red-500">*</span></label>
+                            {% with doc=existing_docs|get_item:doc_types.BIRTH_CERTIFICATE %}
+                            {% if doc %}
+                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                    <label for="id_birth_certificate_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                                </div>
+                                <input type="file" name="birth_certificate_upload" id="id_birth_certificate_upload" class="hidden">
+                            {% else %}
+                                {{ form.birth_certificate_upload }}
+                            {% endif %}
+                            {% endwith %}
+                        </div>
                     </div>
                 </div>
 
@@ -120,10 +162,20 @@
                 </div>
             </div>
 
-            <div class="pt-8">
-                <button type="submit" id="submitBtn" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed transition-colors">
-                    Save and Proceed to Payment
+            <div class="pt-8 flex flex-col sm:flex-row gap-4">
+                <button type="button" id="updateBtn" class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Update Information
                 </button>
+                
+                {% if not payment_made %}
+                <button type="submit" id="submitBtn" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
+                    Proceed to Payment
+                </button>
+                {% else %}
+                <button type="button" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-dark-green cursor-not-allowed">
+                    Application Fee Paid
+                </button>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -146,62 +198,67 @@
 
     const declarationCheckbox = document.getElementById('id_declaration_agreed');
     const submitBtn = document.getElementById('submitBtn');
-    declarationCheckbox.addEventListener('change', function() {
-        if (this.checked) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            submitBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
-        } else {
-            submitBtn.disabled = true;
-            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            submitBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
-        }
-    });
-
+    const updateBtn = document.getElementById('updateBtn');
     const form = document.getElementById('applicationForm');
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = 'Saving...';
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    if (submitBtn) {
+        declarationCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                submitBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                submitBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+            }
+        });
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Saving...';
+            const formData = new FormData(form);
+            fetch("{% url 'portal:student_application_form' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken} })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    submitBtn.innerHTML = 'Redirecting to Payment...';
+                    initiatePayment();
+                } else {
+                    alert('Please fill out all required fields and upload all required documents.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Proceed to Payment';
+                    declarationCheckbox.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+
+    updateBtn.addEventListener('click', function() {
+        updateBtn.disabled = true;
+        updateBtn.innerHTML = 'Updating...';
         const formData = new FormData(form);
-        
-        // CORRECTED: The URL name is now correct
-        fetch("{% url 'portal:student_application_form' %}", {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw err; });
-            }
-            return response.json();
-        })
+        fetch("{% url 'portal:student_application_form' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken} })
+        .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                submitBtn.innerHTML = 'Redirecting to Payment...';
-                initiatePayment();
+            if(data.success) {
+                alert('Information updated successfully!');
+            } else {
+                alert('There was an error updating your information. Please check all required fields.');
             }
-        })
-        .catch(errorData => {
-            console.error('Submission Error:', errorData);
-            let errorMessage = 'Please fill out all required fields and upload all required documents.';
-            if (errorData.errors) {
-                errorMessage = "There were errors in your submission. Please check the form and try again.";
-            }
-            alert(errorMessage);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Save and Proceed to Payment';
-            declarationCheckbox.dispatchEvent(new Event('change'));
+            updateBtn.disabled = false;
+            updateBtn.innerHTML = 'Update Information';
         });
     });
     
     function initiatePayment() {
-        // CORRECTED: The payment purpose is now correct for students
         const payload = { purpose: 'STUDENT_APP_FEE' };
         fetch("{% url 'portal:initiate_payment' %}", {
             method: 'POST',
             body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }
         })
         .then(response => response.json())
         .then(paymentData => {
@@ -210,17 +267,11 @@
                 callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
                 onclose: function() {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Save and Proceed to Payment';
+                    submitBtn.innerHTML = 'Proceed to Payment';
                     declarationCheckbox.dispatchEvent(new Event('change'));
                 },
             });
         })
-        .catch(error => {
-            console.error('Error initiating payment:', error);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Save and Proceed to Payment';
-            declarationCheckbox.dispatchEvent(new Event('change'));
-        });
     }
 </script>
 {% endblock %}

@@ -24,18 +24,11 @@ from .forms import (
 
 # --- Authentication ---
 def signup_choice_view(request):
-    """
-    Displays the page where users choose their application path.
-    """
     return render(request, 'account/signup_choice.html')
 
 # --- Main Dashboard Router ---
 @login_required
 def dashboard(request):
-    """
-    Acts as a router, displaying the correct dashboard based on user type.
-    It creates a UserProfile if one doesn't exist for some reason.
-    """
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if profile.account_type == UserProfile.AccountType.STUDENT:
         return student_dashboard(request)
@@ -47,7 +40,7 @@ def student_dashboard(request):
     application, _ = Application.objects.get_or_create(user=request.user)
     ALL_STEPS = [
         {'id': Application.ApplicationStatus.STEP_1_APPLICATION_FORM, 'title': 'Application Form', 'number': 1, 'url_name': 'portal:student_application_form'},
-        {'id': Application.ApplicationStatus.STEP_2_ADMISSION_FEE, 'title': 'Admission Letter Fee', 'number': 2, 'url_name': 'portal:student_document_submission'},
+        {'id': Application.ApplicationStatus.STEP_2_ADMISSION_FEE, 'title': 'Admission Form', 'number': 2, 'url_name': 'portal:student_document_submission'},
         {'id': Application.ApplicationStatus.STEP_3_AGENCY_FEE, 'title': 'Agency Fee', 'number': 3, 'url_name': 'portal:student_agency_fee'},
         {'id': Application.ApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': 'portal:student_visa_application'},
     ]
@@ -75,6 +68,12 @@ def student_dashboard(request):
 @login_required
 def student_application_form_view(request):
     application, _ = Application.objects.get_or_create(user=request.user)
+    payment_made = Payment.objects.filter(
+        application=application, 
+        purpose=Payment.PaymentPurpose.STUDENT_APP_FEE, 
+        status=Payment.PaymentStatus.SUCCESSFUL
+    ).exists()
+
     if request.method == 'POST':
         form = StudentApplicationForm(request.POST, request.FILES, instance=application)
         if form.is_valid():
@@ -93,36 +92,69 @@ def student_application_form_view(request):
                         application=application_instance, document_type=doc_type,
                         defaults={'file': request.FILES[field_name]}
                     )
-            return JsonResponse({'success': True, 'message': 'Application saved successfully!'})
+            return JsonResponse({'success': True, 'message': 'Application data saved successfully!'})
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = StudentApplicationForm(instance=application)
-    return render(request, 'portal/student_application_form.html', {'form': form})
+    
+    # Fetch existing documents to display their status in the template
+    existing_docs = {
+        doc.document_type: doc for doc in application.documents.all()
+    }
+    
+    context = {
+        'form': form, 
+        'payment_made': payment_made,
+        'existing_docs': existing_docs,
+        'doc_types': Document.DocumentType
+    }
+    return render(request, 'portal/student_application_form.html', context)
 
 @login_required
 def student_document_submission_view(request):
     application = request.user.student_application
     admin_document = Document.objects.filter(application__isnull=True, work_application__isnull=True, is_admin_upload=True, document_type=Document.DocumentType.BLANK_FORM_TEMPLATE).order_by('-uploaded_at').first()
+    payment_made = Payment.objects.filter(
+        application=application, 
+        purpose=Payment.PaymentPurpose.ADMISSION_FEE, 
+        status=Payment.PaymentStatus.SUCCESSFUL
+    ).exists()
     if request.method == 'POST':
         form = DocumentUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            document = form.save(commit=False)
-            document.application = application
-            document.document_type = Document.DocumentType.FILLED_APPLICATION_FORM
-            document.save()
+            Document.objects.update_or_create(
+                application=application,
+                document_type=Document.DocumentType.FILLED_APPLICATION_FORM,
+                defaults={'file': request.FILES['file']}
+            )
             return JsonResponse({'success': True, 'message': 'Document uploaded successfully!'})
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     form = DocumentUploadForm()
-    context = {'form': form, 'admin_document': admin_document, 'application': application}
+    context = {
+        'form': form, 'admin_document': admin_document, 
+        'application': application, 'payment_made': payment_made
+    }
     return render(request, 'portal/student_document_submission.html', context)
 
 @login_required
 def student_agency_fee_view(request):
     application = request.user.student_application
     admission_letter = Document.objects.filter(application=application, document_type=Document.DocumentType.ADMISSION_LETTER, is_admin_upload=True).first()
-    context = {'application': application, 'admission_letter': admission_letter}
+    full_payment = Payment.objects.filter(application=application, purpose=Payment.PaymentPurpose.AGENCY_FEE_FULL, status=Payment.PaymentStatus.SUCCESSFUL).exists()
+    half_payment_count = Payment.objects.filter(application=application, purpose=Payment.PaymentPurpose.AGENCY_FEE_HALF, status=Payment.PaymentStatus.SUCCESSFUL).count()
+    
+    payment_status = 'none'
+    if full_payment or half_payment_count >= 2:
+        payment_status = 'full_paid'
+    elif half_payment_count == 1:
+        payment_status = 'half_paid'
+
+    context = {
+        'application': application, 'admission_letter': admission_letter,
+        'payment_status': payment_status
+    }
     return render(request, 'portal/student_agency_fee.html', context)
 
 @login_required
@@ -318,7 +350,7 @@ def flutterwave_webhook(request):
                     user = application.user
                     if payment.purpose == Payment.PaymentPurpose.WORK_APP_FEE:
                         application.status = WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM
-                    # Add other worker status updates here
+                    # ... add other worker status updates here ...
                     application.save()
 
                 if user:

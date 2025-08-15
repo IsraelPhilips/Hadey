@@ -18,7 +18,6 @@
             <input type="hidden" name="account_type" value="{{ request.GET.type|default:'STUDENT' }}">
 
             <div class="space-y-4">
-                <!-- CORRECTED: The loop no longer needs an 'if' condition -->
                 {% for field in form %}
                 <div>
                     <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>

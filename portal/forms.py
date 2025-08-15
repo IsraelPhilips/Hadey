@@ -5,19 +5,22 @@ from allauth.account.forms import SignupForm
 from .models import Application, Document, Testimonial, UserProfile, WorkApplication, Country
 
 class CustomSignupForm(SignupForm):
-    account_type = forms.ChoiceField(choices=UserProfile.AccountType.choices, widget=forms.HiddenInput())
+    """
+    A custom signup form to override the default styling.
+    The account_type field has been removed to prevent conflicts.
+    """
     def __init__(self, *args, **kwargs):
         super(CustomSignupForm, self).__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            if field_name != 'account_type':
-                field.widget.attrs.update({'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'})
-                field.help_text = ''
+            field.widget.attrs.update({'class': 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'})
+            field.help_text = ''
 
 class StudentApplicationForm(forms.ModelForm):
-    passport_photograph_upload = forms.ImageField(required=True, label="Passport Photograph")
-    international_passport_upload = forms.FileField(required=True, label="International Passport")
-    school_certificate_upload = forms.FileField(required=True, label="WAEC or NECO Certificate")
-    birth_certificate_upload = forms.FileField(required=True, label="Birth Certificate")
+    passport_photograph_upload = forms.ImageField(required=False, label="Passport Photograph")
+    international_passport_upload = forms.FileField(required=False, label="International Passport")
+    school_certificate_upload = forms.FileField(required=False, label="WAEC or NECO Certificate")
+    birth_certificate_upload = forms.FileField(required=False, label="Birth Certificate")
+
     class Meta:
         model = Application
         exclude = ['user', 'status', 'visa_status', 'passport_photograph']
@@ -36,13 +39,10 @@ class StudentApplicationForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if 'upload' not in field_name and not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': base_classes})
-            # Mark fields from the model as required in the form
-            if not field.required and field_name not in ['guardian_name', 'guardian_relationship', 'guardian_contact', 'achievements', 'medical_conditions', 'allergies']:
-                 self.fields[field_name].required = True
 
 class WorkApplicationForm(forms.ModelForm):
-    passport_photograph_upload = forms.ImageField(required=True, label="Passport Photograph")
-    international_passport_upload = forms.FileField(required=True, label="International Passport Copy")
+    passport_photograph_upload = forms.ImageField(required=False, label="Passport Photograph")
+    international_passport_upload = forms.FileField(required=False, label="International Passport Copy")
     educational_certificate_upload = forms.FileField(required=False, label="Educational Certificate (if any)")
     work_experience_upload = forms.FileField(required=False, label="Work Experience Letters")
     class Meta:
@@ -62,9 +62,6 @@ class WorkApplicationForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if 'upload' not in field_name and not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': base_classes})
-            if not field.required and field_name not in ['previous_application_details', 'skills_certifications']:
-                self.fields[field_name].required = True
-        
         self.fields['destination_country'].queryset = Country.objects.all()
         self.fields['destination_country'].widget.attrs.update({'class': base_classes})
 
