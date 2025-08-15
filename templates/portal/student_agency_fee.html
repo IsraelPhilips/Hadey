@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Agency Fee | Hadey Travels Global{% endblock %}
 
 {% block content %}
@@ -22,10 +21,10 @@
         {% elif admission_letter %}
             <p class="text-gray-600 mb-6 text-center">Your admission letter is ready! To receive it, please complete the agency fee payment. You can choose to make the full payment at once or pay in two parts.</p>
             <div class="space-y-4">
-                <button id="payHalfBtn" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-primary-green hover:bg-dark-green focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green transition-colors">
+                <button id="payHalfBtn" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-primary-green hover:bg-dark-green">
                     Pay Half ($250)
                 </button>
-                <button id="payFullBtn" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-accent-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-orange transition-colors">
+                <button id="payFullBtn" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-accent-orange hover:bg-opacity-90">
                     Pay Full ($500)
                 </button>
             </div>
@@ -40,7 +39,6 @@
     </div>
 </div>
 
-<!-- AJAX script from previous step remains unchanged -->
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script>
     const payHalfBtn = document.getElementById('payHalfBtn');
@@ -71,12 +69,6 @@
                     button.innerHTML = originalText;
                 },
             });
-        })
-        .catch(error => {
-            console.error('Payment initiation error:', error);
-            button.disabled = false;
-            button.innerHTML = originalText;
-            alert('Could not initiate payment. Please try again.');
         });
     }
 </script>

@@ -179,7 +179,7 @@ LOGIN_REDIRECT_URL = 'portal:dashboard'
 
 ACCOUNT_LOGOUT_ON_GET = False
 
-FLUTTERWAVE_SECRET_KEY = 'FLWSECK_TEST-e5f3348a7e839e075bc24ac2ea3db90f-X'
+FLUTTERWAVE_SECRET_KEY = os.environ.get('FLUTTERWAVE_SECRET_KEY')
 FLUTTERWAVE_PUBLIC_KEY = os.environ.get('FLUTTERWAVE_PUBLIC_KEY')
 
 # --- ALLAUTH CONFIGURATION ---
@@ -190,11 +190,12 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory' # 'mandatory' or 'optional' or 'none'
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_FORMS = {'signup': 'portal.forms.CustomSignupForm'}
 
+ACCOUNT_ADAPTER = 'portal.adapters.CustomAccountAdapter'
 # --- EMAIL CONFIGURATION ---
 # For development, we print emails to the console.
 # For production, you would change this to 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # For a real SMTP server (like SendGrid, Mailgun, or Gmail) in production,
 # you would uncomment and fill these out, preferably using environment variables.

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Student Application Form | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-green">
+        <form method="post" id="applicationForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-dark-green">Student Admission Application Form</h1>
+                <p class="text-gray-600 mt-2">Please fill out this form completely and accurately. Fields marked with <span class="text-red-500">*</span> are required.</p>
+                
+                <div class="mt-6">
+                    <label for="id_passport_photograph_upload" class="cursor-pointer">
+                        <div id="photo-preview" class="w-32 h-32 mx-auto rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 overflow-hidden">
+                            {% if form.instance.passport_photograph %}
+                                <img src="{{ form.instance.passport_photograph.url }}" alt="Passport Photograph" class="w-full h-full object-cover">
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            {% endif %}
+                        </div>
+                        <span class="mt-2 block text-sm font-medium text-primary-green hover:underline">Upload Passport Photograph <span class="text-red-500">*</span></span>
+                    </label>
+                    <input type="file" name="passport_photograph_upload" id="id_passport_photograph_upload" class="hidden" accept="image/*">
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <!-- Personal Information -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">1. Personal Information</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></label>{{ form.full_name }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Date of Birth <span class="text-red-500">*</span></label>{{ form.date_of_birth }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Place of Birth <span class="text-red-500">*</span></label>{{ form.place_of_birth }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Gender <span class="text-red-500">*</span></label>{{ form.gender }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Nationality <span class="text-red-500">*</span></label>{{ form.nationality }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Address <span class="text-red-500">*</span></label>{{ form.address }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">City <span class="text-red-500">*</span></label>{{ form.city }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Postal Code <span class="text-red-500">*</span></label>{{ form.postal_code }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>{{ form.phone_number }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>{{ form.email }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Number <span class="text-red-500">*</span></label>{{ form.passport_number }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Issue Date <span class="text-red-500">*</span></label>{{ form.passport_issue_date }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Expiry Date <span class="text-red-500">*</span></label>{{ form.passport_expiry_date }}</div>
+                    </div>
+                </div>
+
+                <!-- Parent/Guardian Information -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">2. Parent/Guardian Information</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Father's Name <span class="text-red-500">*</span></label>{{ form.father_name }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Father's Occupation <span class="text-red-500">*</span></label>{{ form.father_occupation }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Father's Contact <span class="text-red-500">*</span></label>{{ form.father_contact }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Mother's Name <span class="text-red-500">*</span></label>{{ form.mother_name }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Mother's Occupation <span class="text-red-500">*</span></label>{{ form.mother_occupation }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Mother's Contact <span class="text-red-500">*</span></label>{{ form.mother_contact }}</div>
+                        <div class="sm:col-span-2 border-t pt-4 mt-4 border-dashed"><p class="text-sm text-gray-500">Guardian (if applicable)</p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Guardian's Name</label>{{ form.guardian_name }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Relationship with Student</label>{{ form.guardian_relationship }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Guardian's Contact</label>{{ form.guardian_contact }}</div>
+                    </div>
+                </div>
+
+                <!-- Academic Information -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">3. Academic Information</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Applying for Grade/Level <span class="text-red-500">*</span></label>{{ form.grade_level }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Preferred Program <span class="text-red-500">*</span></label>{{ form.preferred_program }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Previous School Name <span class="text-red-500">*</span></label>{{ form.previous_school }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Country You Are Applying From <span class="text-red-500">*</span></label>{{ form.country_applying_from }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Country You Are Applying To <span class="text-red-500">*</span></label>{{ form.country_of_interest }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Achievements (if any)</label>{{ form.achievements }}</div>
+                    </div>
+                </div>
+
+                <!-- Medical & Emergency -->
+                <div class="border-t border-gray-200 pt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-dark-green mb-4">4. Emergency Contact</h2>
+                        <div class="space-y-6">
+                            <div><label class="block text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></label>{{ form.emergency_contact_name }}</div>
+                            <div><label class="block text-sm font-medium text-gray-700">Relationship <span class="text-red-500">*</span></label>{{ form.emergency_contact_relationship }}</div>
+                            <div><label class="block text-sm font-medium text-gray-700">Contact Number <span class="text-red-500">*</span></label>{{ form.emergency_contact_number }}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-dark-green mb-4">5. Medical Information</h2>
+                        <div class="space-y-6">
+                            <div><label class="block text-sm font-medium text-gray-700">Medical Conditions (if any)</label>{{ form.medical_conditions }}</div>
+                            <div><label class="block text-sm font-medium text-gray-700">Allergies (if any)</label>{{ form.allergies }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info & Documents -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">6. Additional Information & Documents</h2>
+                    <div class="space-y-6">
+                        <div><label class="block text-sm font-medium text-gray-700">How did you hear about us? <span class="text-red-500">*</span></label>{{ form.how_did_you_hear }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">International Passport <span class="text-red-500">*</span></label>{{ form.international_passport_upload }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">WAEC or NECO Certificate <span class="text-red-500">*</span></label>{{ form.school_certificate_upload }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Birth Certificate <span class="text-red-500">*</span></label>{{ form.birth_certificate_upload }}</div>
+                    </div>
+                </div>
+
+                <!-- Declaration -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">7. Declaration</h2>
+                    <div class="flex items-start">
+                        {{ form.declaration_agreed }}
+                        <div class="ml-3 text-sm">
+                            <label for="id_declaration_agreed" class="font-medium text-gray-700">I hereby declare that all the information provided is true and accurate to the best of my knowledge. <span class="text-red-500">*</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8">
+                <button type="submit" id="submitBtn" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed transition-colors">
+                    Save and Proceed to Payment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+    const photoInput = document.getElementById('id_passport_photograph_upload');
+    const photoPreview = document.getElementById('photo-preview');
+    photoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.innerHTML = `<img src="${e.target.result}" alt="Passport Photograph" class="w-full h-full object-cover">`;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    const declarationCheckbox = document.getElementById('id_declaration_agreed');
+    const submitBtn = document.getElementById('submitBtn');
+    declarationCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+        }
+    });
+
+    const form = document.getElementById('applicationForm');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Saving...';
+        const formData = new FormData(form);
+        
+        // CORRECTED: The URL name is now correct
+        fetch("{% url 'portal:student_application_form' %}", {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                submitBtn.innerHTML = 'Redirecting to Payment...';
+                initiatePayment();
+            }
+        })
+        .catch(errorData => {
+            console.error('Submission Error:', errorData);
+            let errorMessage = 'Please fill out all required fields and upload all required documents.';
+            if (errorData.errors) {
+                errorMessage = "There were errors in your submission. Please check the form and try again.";
+            }
+            alert(errorMessage);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save and Proceed to Payment';
+            declarationCheckbox.dispatchEvent(new Event('change'));
+        });
+    });
+    
+    function initiatePayment() {
+        // CORRECTED: The payment purpose is now correct for students
+        const payload = { purpose: 'STUDENT_APP_FEE' };
+        fetch("{% url 'portal:initiate_payment' %}", {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(response => response.json())
+        .then(paymentData => {
+            FlutterwaveCheckout({
+                ...paymentData,
+                callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
+                onclose: function() {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Save and Proceed to Payment';
+                    declarationCheckbox.dispatchEvent(new Event('change'));
+                },
+            });
+        })
+        .catch(error => {
+            console.error('Error initiating payment:', error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save and Proceed to Payment';
+            declarationCheckbox.dispatchEvent(new Event('change'));
+        });
+    }
+</script>
+{% endblock %}

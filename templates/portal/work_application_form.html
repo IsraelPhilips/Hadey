@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Work Visa Application Form | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-accent-orange">
+        <form method="post" id="workApplicationForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-dark-green">Work Visa Application Form</h1>
+                <p class="text-gray-600 mt-2">Please fill out this form completely. Fields marked with <span class="text-red-500">*</span> are required.</p>
+                
+                <div class="mt-6">
+                    <label for="id_passport_photograph_upload" class="cursor-pointer">
+                        <div id="photo-preview" class="w-32 h-32 mx-auto rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 overflow-hidden">
+                            {% if form.instance.passport_photograph %}
+                                <img src="{{ form.instance.passport_photograph.url }}" alt="Passport Photograph" class="w-full h-full object-cover">
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            {% endif %}
+                        </div>
+                        <span class="mt-2 block text-sm font-medium text-primary-green hover:underline">Upload Passport Photograph <span class="text-red-500">*</span></span>
+                    </label>
+                    <input type="file" name="passport_photograph_upload" id="id_passport_photograph_upload" class="hidden" accept="image/*">
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <!-- Personal Information -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">1. Personal Information</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Full Name (as per passport) <span class="text-red-500">*</span></label>{{ form.full_name }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Gender <span class="text-red-500">*</span></label>{{ form.gender }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Date of Birth <span class="text-red-500">*</span></label>{{ form.date_of_birth }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Place of Birth <span class="text-red-500">*</span></label>{{ form.place_of_birth }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Nationality <span class="text-red-500">*</span></label>{{ form.nationality }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Number <span class="text-red-500">*</span></label>{{ form.passport_number }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Issue Date <span class="text-red-500">*</span></label>{{ form.passport_issue_date }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Expiry Date <span class="text-red-500">*</span></label>{{ form.passport_expiry_date }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Marital Status <span class="text-red-500">*</span></label>{{ form.marital_status }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Current Address <span class="text-red-500">*</span></label>{{ form.current_address }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Contact Number <span class="text-red-500">*</span></label>{{ form.contact_number }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>{{ form.email }}</div>
+                    </div>
+                </div>
+
+                <!-- Employment & Visa Details -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">2. Employment & Visa Details</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Job Title/Position Applying For <span class="text-red-500">*</span></label>{{ form.job_title }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Sponsor (Self, Father, etc.) <span class="text-red-500">*</span></label>{{ form.sponsor }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Country of Work Destination <span class="text-red-500">*</span></label>{{ form.destination_country }}</div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Have you ever applied for a work visa before? <span class="text-red-500">*</span></label>
+                            <div class="mt-2 space-x-4">{{ form.applied_before }}</div>
+                        </div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">If yes, provide details (Country, Year, Status)</label>{{ form.previous_application_details }}</div>
+                    </div>
+                </div>
+                
+                <!-- Educational & Professional Background -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">3. Educational & Professional Background</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Highest Educational Qualification <span class="text-red-500">*</span></label>{{ form.highest_qualification }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Field of Study <span class="text-red-500">*</span></label>{{ form.field_of_study }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Years of Work Experience <span class="text-red-500">*</span></label>{{ form.years_of_experience }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Skills/Certifications Relevant to the Job</label>{{ form.skills_certifications }}</div>
+                    </div>
+                </div>
+
+                <!-- Supporting Documents -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">4. Supporting Documents</h2>
+                    <div class="space-y-4">
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Copy (Data Page) <span class="text-red-500">*</span></label>{{ form.international_passport_upload }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Educational Certificate (if any)</label>{{ form.educational_certificate_upload }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Work Experience Letters</label>{{ form.work_experience_upload }}</div>
+                    </div>
+                </div>
+
+                <!-- Declaration -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">5. Declaration</h2>
+                    <div class="flex items-start">
+                        {{ form.declaration_agreed }}
+                        <div class="ml-3 text-sm">
+                            <label for="id_declaration_agreed" class="font-medium text-gray-700">I hereby declare that all the information provided is true and accurate to the best of my knowledge. <span class="text-red-500">*</span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8">
+                <button type="submit" id="submitBtn" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed transition-colors">
+                    Save and Proceed to Payment ($30)
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // All JavaScript logic (photo preview, declaration checkbox, AJAX submission) is the same as the student form
+</script>
+{% endblock %}

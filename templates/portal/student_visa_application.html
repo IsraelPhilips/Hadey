@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}Visa Application | Hadey Travels Global{% endblock %}
 
 {% block content %}
@@ -7,8 +6,11 @@
     <!-- Header -->
     <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-green">
         <div class="text-center">
-            <h1 class="text-3xl font-bold text-dark-green">Step 4: Visa Application</h1>
-            <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Track your visa progress and share your experience with us.</p>
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary-green">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+            </div>
+            <h1 class="text-3xl font-bold text-dark-green mt-4">Step 4: Visa Application Process</h1>
+            <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Congratulations on reaching the final step! Track your progress below.</p>
         </div>
     </div>
 
@@ -50,7 +52,6 @@
                 {% csrf_token %}
                 {{ testimonial_form.media }}
                 
-                <!-- Star Rating -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
                     <div id="star-rating" class="flex items-center space-x-1">
@@ -61,14 +62,13 @@
                     {{ testimonial_form.rating }}
                 </div>
 
-                <!-- Content -->
                 <div>
                     <label for="id_content" class="block text-sm font-medium text-gray-700">Your Testimonial</label>
                     {{ testimonial_form.content }}
                 </div>
 
                 <div class="mt-6">
-                    <button type="submit" id="submitTestimonialBtn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-accent-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-orange transition-colors">
+                    <button type="submit" id="submitTestimonialBtn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-accent-orange hover:bg-opacity-90">
                         Submit Testimonial
                     </button>
                 </div>
@@ -79,33 +79,33 @@
 </div>
 
 <script>
-    // Star Rating Logic
     const ratingContainer = document.getElementById('star-rating');
-    const ratingInput = document.getElementById('id_rating');
-    const stars = ratingContainer.querySelectorAll('svg');
+    if (ratingContainer) {
+        const ratingInput = document.getElementById('id_rating');
+        const stars = ratingContainer.querySelectorAll('svg');
 
-    ratingContainer.addEventListener('click', e => {
-        const star = e.target.closest('svg');
-        if (!star) return;
-        
-        const ratingValue = star.dataset.value;
-        ratingInput.value = ratingValue;
-        updateStars(ratingValue);
-    });
-
-    function updateStars(rating) {
-        stars.forEach(star => {
-            if (star.dataset.value <= rating) {
-                star.classList.remove('text-gray-300');
-                star.classList.add('text-accent-yellow');
-            } else {
-                star.classList.remove('text-accent-yellow');
-                star.classList.add('text-gray-300');
-            }
+        ratingContainer.addEventListener('click', e => {
+            const star = e.target.closest('svg');
+            if (!star) return;
+            
+            const ratingValue = star.dataset.value;
+            ratingInput.value = ratingValue;
+            updateStars(ratingValue);
         });
+
+        function updateStars(rating) {
+            stars.forEach(star => {
+                if (star.dataset.value <= rating) {
+                    star.classList.remove('text-gray-300');
+                    star.classList.add('text-accent-yellow');
+                } else {
+                    star.classList.remove('text-accent-yellow');
+                    star.classList.add('text-gray-300');
+                }
+            });
+        }
     }
 
-    // Testimonial Form Submission Logic
     const testimonialForm = document.getElementById('testimonialForm');
     if (testimonialForm) {
         const submitBtn = document.getElementById('submitTestimonialBtn');
@@ -118,7 +118,7 @@
 
             const formData = new FormData(testimonialForm);
 
-            fetch("{% url 'portal:visa_application' %}", {
+            fetch("{% url 'portal:student_visa_application' %}", {
                 method: 'POST',
                 body: formData,
                 headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')}
@@ -127,20 +127,19 @@
             .then(data => {
                 if (data.success) {
                     testimonialForm.style.display = 'none';
-                    successMsg.textContent = data.message;
-                    // Optionally, redirect or update the page further
-                    window.location.reload(); // Reload to show the "Thank You" message
+                    const successContainer = testimonialForm.parentElement;
+                    const successHTML = `
+                        <div class="text-center">
+                            <h2 class="text-2xl font-semibold text-dark-green mb-4">Thank You For Your Feedback!</h2>
+                            <p class="text-gray-600">Your testimonial has been submitted and is pending review by our team.</p>
+                        </div>
+                    `;
+                    successContainer.innerHTML = successHTML;
                 } else {
                     alert(data.message || 'An error occurred.');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'Submit Testimonial';
                 }
-            })
-            .catch(error => {
-                console.error('Testimonial submission error:', error);
-                alert('A network error occurred. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Testimonial';
             });
         });
     }

@@ -1,0 +1,47 @@
+<div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 transition-all duration-300 hover:shadow-xl hover:border-accent-orange {% if step.status == 'pending' %}opacity-60{% endif %}">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+        <div class="flex items-center mb-4 sm:mb-0">
+            <!-- Icon based on status -->
+            <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full font-bold text-xl 
+                {% if step.status == 'active' %}bg-accent-orange text-white ring-4 ring-accent-orange/30{% endif %}
+                {% if step.status == 'completed' %}bg-dark-green text-white{% endif %}
+                {% if step.status == 'pending' %}bg-gray-200 text-gray-500{% endif %}">
+                
+                {% if step.status == 'completed' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                {% else %}
+                    <span {% if step.status == 'active' %}class="animate-pulse"{% endif %}>{{ step.number }}</span>
+                {% endif %}
+            </div>
+            <div class="ml-4">
+                <h2 class="text-xl font-semibold text-dark-green">{{ step.title }}</h2>
+                <p class="text-sm font-semibold
+                    {% if step.status == 'active' %}text-accent-orange{% endif %}
+                    {% if step.status == 'completed' %}text-gray-500{% endif %}
+                    {% if step.status == 'pending' %}text-gray-500{% endif %}">
+                    {% if step.status == 'active' %}Current Step{% endif %}
+                    {% if step.status == 'completed' %}Completed{% endif %}
+                    {% if step.status == 'pending' %}Pending{% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Action Button -->
+        <div class="w-full sm:w-auto flex-shrink-0">
+             {% with link_url=step.url_name|default:"#" %}
+                {% if step.status == 'active' %}
+                    <a href="{% if link_url != '#' %}{% url link_url %}{% else %}#{% endif %}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-dark-green bg-accent-yellow hover:bg-opacity-90 shadow-sm transition-colors">
+                        View Details
+                        <svg xmlns="http://www.w3.org/2000/svg" class="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    </a>
+                {% elif step.status == 'completed' %}
+                    <a href="{% if link_url != '#' %}{% url link_url %}{% else %}#{% endif %}" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                        Review
+                    </a>
+                {% else %}
+                    <span class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-100 cursor-not-allowed">Locked</span>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>

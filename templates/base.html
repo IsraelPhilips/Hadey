@@ -41,7 +41,6 @@
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div>
                 <a href="{% if user.is_authenticated %}{% url 'portal:dashboard' %}{% else %}{% url 'account_login' %}{% endif %}">
-                    <!-- Load the logo from our new static files directory -->
                     <img src="{% static 'images/logo.png' %}" alt="Hadey Travels Global Logo" class="h-12">
                 </a>
             </div>
@@ -51,7 +50,8 @@
                     <a href="{% url 'account_logout' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Logout</a>
                 {% else %}
                     <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-primary-green mx-4">Sign In</a>
-                    <a href="{% url 'account_signup' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Sign Up</a>
+                    <!-- CORRECTED: Points to the new choice page -->
+                    <a href="{% url 'account_signup_choice' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Sign Up</a>
                 {% endif %}
             </div>
         </nav>

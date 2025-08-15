@@ -6,15 +6,23 @@ from . import views
 app_name = 'portal'
 
 urlpatterns = [
+    # --- Main Dashboard ---
     path('', views.dashboard, name='dashboard'),
-    path('application/', views.application_form_view, name='application_form'),
-    path('documents/', views.document_submission_view, name='document_submission'),
-    path('agency-fee/', views.agency_fee_view, name='agency_fee'),
 
-    # Add the URL for the final visa application step
-    path('visa-application/', views.visa_application_view, name='visa_application'),
+    # --- Student Application URLs ---
+    path('student/application/', views.student_application_form_view, name='student_application_form'),
+    path('student/documents/', views.student_document_submission_view, name='student_document_submission'),
+    path('student/agency-fee/', views.student_agency_fee_view, name='student_agency_fee'),
+    path('student/visa-application/', views.student_visa_application_view, name='student_visa_application'),
 
-    # Payment URLs
+    # --- Worker Application URLs ---
+    path('worker/application/', views.work_application_form_view, name='work_application_form'),
+    # Placeholders for future steps
+    # path('worker/employment-form/', views.worker_employment_form_view, name='worker_employment_form'),
+    # path('worker/job-offer/', views.worker_job_offer_view, name='worker_job_offer'),
+    # path('worker/visa-application/', views.worker_visa_application_view, name='worker_visa_application'),
+
+    # --- Generic Payment URLs ---
     path('payment/initiate/', views.initiate_payment, name='initiate_payment'),
     path('payment/callback/', views.flutterwave_webhook, name='payment_callback'),
 ]
