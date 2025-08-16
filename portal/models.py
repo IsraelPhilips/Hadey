@@ -39,7 +39,6 @@ class Application(models.Model): # STUDENT Application
     visa_status = models.CharField(max_length=50, choices=VisaStatus.choices, default=VisaStatus.NOT_STARTED)
     passport_photograph = models.ImageField(upload_to='passport_photos/', blank=True, null=True)
     
-    # CORRECTED: Fields are now nullable in the DB to allow initial object creation
     passport_number = models.CharField(max_length=100, blank=True, null=True)
     passport_issue_date = models.DateField(blank=True, null=True)
     passport_expiry_date = models.DateField(blank=True, null=True)
@@ -98,8 +97,6 @@ class WorkApplication(models.Model):
     status = models.CharField(max_length=50, choices=WorkApplicationStatus.choices, default=WorkApplicationStatus.STEP_1_APPLICATION_FORM)
     visa_status = models.CharField(max_length=50, choices=VisaStatus.choices, default=VisaStatus.NOT_STARTED)
     passport_photograph = models.ImageField(upload_to='passport_photos/', blank=True, null=True)
-
-    # CORRECTED: Fields are now nullable in the DB
     full_name = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=20, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
@@ -122,13 +119,12 @@ class WorkApplication(models.Model):
     years_of_experience = models.CharField(max_length=50, blank=True, null=True)
     skills_certifications = models.TextField(blank=True)
     declaration_agreed = models.BooleanField(default=False)
-
+    job_offer_accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"Work Application for {self.user.username}"
 
-# ... Other models (Document, VisaUpdate, etc.) are unchanged ...
 class Document(models.Model):
     class DocumentType(models.TextChoices):
         INTERNATIONAL_PASSPORT = 'INTERNATIONAL_PASSPORT', 'International Passport'
@@ -136,10 +132,11 @@ class Document(models.Model):
         BIRTH_CERTIFICATE = 'BIRTH_CERTIFICATE', 'Birth Certificate'
         FILLED_APPLICATION_FORM = 'FILLED_APPLICATION_FORM', 'Filled Application Form (Step 2)'
         ADMISSION_LETTER = 'ADMISSION_LETTER', 'Admission Letter'
-        BLANK_FORM_TEMPLATE = 'BLANK_FORM_TEMPLATE', 'Blank Form Template'
+        BLANK_FORM_TEMPLATE = 'BLANK_FORM_TEMPLATE', 'Blank Student Form Template'
         RESUME_CV = 'RESUME_CV', 'Resume/CV'
         WORK_EXPERIENCE_LETTER = 'WORK_EXPERIENCE_LETTER', 'Work Experience Letter'
         JOB_OFFER = 'JOB_OFFER', 'Job Offer'
+        BLANK_EMPLOYMENT_FORM = 'BLANK_EMPLOYMENT_FORM', 'Blank Employment Form Template'
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='documents', blank=True, null=True)
     work_application = models.ForeignKey(WorkApplication, on_delete=models.CASCADE, related_name='documents', blank=True, null=True)
     document_type = models.CharField(max_length=50, choices=DocumentType.choices)
@@ -187,6 +184,10 @@ class Payment(models.Model):
         WORK_APP_FEE = 'WORK_APP_FEE', 'Work Application Fee'
         WORK_VISA_50_PERCENT = 'WORK_VISA_50_PERCENT', 'Work Visa Fee (50%)'
         WORK_VISA_25_PERCENT = 'WORK_VISA_25_PERCENT', 'Work Visa Fee (25%)'
+        # CORRECTED: Added the missing payment purpose
+        WORK_VISA_FINAL_50_PERCENT = 'WORK_VISA_FINAL_50_PERCENT', 'Work Visa Fee (Final 50%)'
+        WORK_VISA_REMAINING_25_PERCENT = 'WORK_VISA_REMAINING_25_PERCENT', 'Work Visa Fee (Remaining 25%)'
+
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
     work_application = models.ForeignKey(WorkApplication, on_delete=models.CASCADE, related_name='payments', null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)

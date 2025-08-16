@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Job Offer | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-accent-orange">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-dark-green">Step 3: Job Offer & Final Fee</h1>
+            <p class="text-gray-600 mt-1">Review your job offer and complete the final processing fee.</p>
+        </div>
+
+        <div class="space-y-6">
+            <div class="p-5 border rounded-lg bg-gray-50">
+                <h2 class="text-lg font-semibold text-dark-green">1. Review Your Job Offer</h2>
+                {% if job_offer %}
+                    <p class="text-sm text-gray-600 mt-1">Congratulations! The admin has uploaded your job offer. Please download, review it carefully, and accept below.</p>
+                    <a href="{{ job_offer.file.url }}" download class="mt-3 inline-flex items-center px-4 py-2 bg-primary-green text-white font-semibold rounded-md hover:bg-dark-green text-sm">
+                        Download Job Offer
+                    </a>
+                {% else %}
+                    <p class="mt-2 text-sm text-amber-700 bg-amber-100 p-3 rounded-md">Your job offer is being processed. You will be notified by email as soon as it's available.</p>
+                {% endif %}
+            </div>
+
+            {% if job_offer %}
+                <div class="p-5 border rounded-lg bg-gray-50">
+                    <h2 class="text-lg font-semibold text-dark-green">2. Accept Offer & Final Payment</h2>
+                    
+                    {% if payment_status == 'full_paid' %}
+                        <div class="mt-2 text-center p-4 bg-green-50 rounded-md">
+                            <p class="font-semibold text-green-800">All payments have been completed successfully!</p>
+                        </div>
+                    {% else %}
+                        <div class="flex items-start my-4">
+                            <div class="flex items-center h-5">
+                                <input id="acceptOffer" name="acceptOffer" type="checkbox" class="focus:ring-primary-green h-4 w-4 text-primary-green border-gray-300 rounded" {% if application.job_offer_accepted %}checked disabled{% endif %}>
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="acceptOffer" class="font-medium text-gray-700">I have reviewed and accept the terms of the employment offer.</label>
+                            </div>
+                        </div>
+
+                        {% if payment_status == 'half_paid' %}
+                            <div class="space-y-4">
+                                <button id="pay50Btn" disabled class="payment-btn w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
+                                    Pay Remaining 50% (${{ remaining_50_percent|floatformat:2 }})
+                                </button>
+                                <button id="pay25Btn" disabled class="payment-btn w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
+                                    Pay 25% Installment (${{ remaining_25_percent|floatformat:2 }})
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+    const acceptCheckbox = document.getElementById('acceptOffer');
+    const paymentButtons = document.querySelectorAll('.payment-btn');
+    const csrfToken = '{{ csrf_token }}';
+
+    function setPaymentButtonsState(enabled) {
+        paymentButtons.forEach(button => {
+            button.disabled = !enabled;
+            if (enabled) {
+                button.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                button.classList.add('bg-primary-green', 'hover:bg-dark-green');
+            } else {
+                button.classList.add('bg-gray-400', 'cursor-not-allowed');
+                button.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+            }
+        });
+    }
+
+    if (acceptCheckbox && !acceptCheckbox.checked) {
+        acceptCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                fetch("{% url 'portal:work_job_offer' %}", {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setPaymentButtonsState(true);
+                        this.disabled = true; // Prevent un-checking
+                    } else {
+                        alert('Could not accept offer. Please try again.');
+                        this.checked = false;
+                    }
+                });
+            }
+        });
+    } else if (acceptCheckbox && acceptCheckbox.checked) {
+        setPaymentButtonsState(true);
+    }
+
+    document.getElementById('pay50Btn')?.addEventListener('click', () => triggerPayment('WORK_VISA_FINAL_50_PERCENT', document.getElementById('pay50Btn')));
+    document.getElementById('pay25Btn')?.addEventListener('click', () => triggerPayment('WORK_VISA_25_PERCENT', document.getElementById('pay25Btn')));
+    
+    function triggerPayment(purpose, button) {
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = 'Initializing...';
+        const payload = { purpose: purpose };
+        fetch("{% url 'portal:initiate_payment' %}", {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }
+        })
+        .then(response => response.json())
+        .then(paymentData => {
+            if (paymentData.error) { throw new Error(paymentData.error); }
+            FlutterwaveCheckout({
+                ...paymentData,
+                callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
+                onclose: function() {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                },
+            });
+        })
+        .catch(error => {
+            console.error('Payment Error:', error);
+            alert('Could not initiate payment. Please try again.');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+</script>
+{% endblock %}

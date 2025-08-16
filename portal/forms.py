@@ -35,10 +35,22 @@ class StudentApplicationForm(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super(StudentApplicationForm, self).__init__(*args, **kwargs)
+        # Apply Tailwind classes
         base_classes = 'mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-green focus:border-primary-green sm:text-sm'
         for field_name, field in self.fields.items():
             if 'upload' not in field_name and not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': base_classes})
+        
+        # CORRECTED: Explicitly set which fields are required, overriding the model
+        optional_fields = [
+            'guardian_name', 'guardian_relationship', 'guardian_contact', 
+            'achievements', 'medical_conditions', 'allergies', 'birth_certificate_upload',
+            'international_passport_upload', 'school_certificate_upload', 'passport_photograph_upload'
+        ]
+        for field_name, field in self.fields.items():
+            if field_name not in optional_fields:
+                field.required = True
+
 
 class WorkApplicationForm(forms.ModelForm):
     passport_photograph_upload = forms.ImageField(required=False, label="Passport Photograph")

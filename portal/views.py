@@ -76,6 +76,20 @@ def student_application_form_view(request):
 
     if request.method == 'POST':
         form = StudentApplicationForm(request.POST, request.FILES, instance=application)
+        
+        is_payment_submission = 'submit_payment' in request.POST
+
+        if is_payment_submission:
+            # Enforce file requirements only when proceeding to payment
+            if not application.passport_photograph and 'passport_photograph_upload' not in request.FILES:
+                form.add_error('passport_photograph_upload', 'Passport photograph is required to proceed.')
+            if not application.documents.filter(document_type=Document.DocumentType.INTERNATIONAL_PASSPORT).exists() and 'international_passport_upload' not in request.FILES:
+                form.add_error('international_passport_upload', 'International passport is required to proceed.')
+            if not application.documents.filter(document_type=Document.DocumentType.SCHOOL_CERTIFICATE).exists() and 'school_certificate_upload' not in request.FILES:
+                form.add_error('school_certificate_upload', 'School certificate is required to proceed.')
+            if not application.documents.filter(document_type=Document.DocumentType.BIRTH_CERTIFICATE).exists() and 'birth_certificate_upload' not in request.FILES:
+                form.add_error('birth_certificate_upload', 'Birth certificate is required to proceed.')
+
         if form.is_valid():
             application_instance = form.save(commit=False)
             if 'passport_photograph_upload' in request.FILES:
@@ -98,16 +112,10 @@ def student_application_form_view(request):
     else:
         form = StudentApplicationForm(instance=application)
     
-    # Fetch existing documents to display their status in the template
-    existing_docs = {
-        doc.document_type: doc for doc in application.documents.all()
-    }
-    
+    existing_docs = { doc.document_type: doc for doc in application.documents.all() }
     context = {
-        'form': form, 
-        'payment_made': payment_made,
-        'existing_docs': existing_docs,
-        'doc_types': Document.DocumentType
+        'form': form, 'payment_made': payment_made,
+        'existing_docs': existing_docs, 'doc_types': Document.DocumentType
     }
     return render(request, 'portal/student_application_form.html', context)
 
@@ -187,9 +195,9 @@ def worker_dashboard(request):
     application, _ = WorkApplication.objects.get_or_create(user=request.user)
     ALL_STEPS = [
         {'id': WorkApplication.WorkApplicationStatus.STEP_1_APPLICATION_FORM, 'title': 'Application Form', 'number': 1, 'url_name': 'portal:work_application_form'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM, 'title': 'Employment Form & 50% Fee', 'number': 2, 'url_name': '#'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER, 'title': 'Job Offer & Final Fee', 'number': 3, 'url_name': '#'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': '#'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM, 'title': 'Employment Form & 50% Fee', 'number': 2, 'url_name': 'portal:work_employment_form'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER, 'title': 'Job Offer & Final Fee', 'number': 3, 'url_name': 'portal:work_job_offer'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': 'portal:work_visa_application'},
     ]
     current_status = application.status
     try:
@@ -215,6 +223,11 @@ def worker_dashboard(request):
 @login_required
 def work_application_form_view(request):
     application, _ = WorkApplication.objects.get_or_create(user=request.user)
+    payment_made = Payment.objects.filter(
+        work_application=application, 
+        purpose=Payment.PaymentPurpose.WORK_APP_FEE, 
+        status=Payment.PaymentStatus.SUCCESSFUL
+    ).exists()
     if request.method == 'POST':
         form = WorkApplicationForm(request.POST, request.FILES, instance=application)
         if form.is_valid():
@@ -238,7 +251,121 @@ def work_application_form_view(request):
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = WorkApplicationForm(instance=application)
-    return render(request, 'portal/work_application_form.html', {'form': form})
+    existing_docs = { doc.document_type: doc for doc in application.documents.all() }
+    context = {
+        'form': form, 'payment_made': payment_made,
+        'existing_docs': existing_docs, 'doc_types': Document.DocumentType
+    }
+    return render(request, 'portal/work_application_form.html', context)
+
+@login_required
+def work_employment_form_view(request):
+    application = request.user.work_application
+    admin_document = Document.objects.filter(
+        application__isnull=True, work_application__isnull=True, is_admin_upload=True, 
+        document_type=Document.DocumentType.BLANK_EMPLOYMENT_FORM
+    ).order_by('-uploaded_at').first()
+    payment_made = Payment.objects.filter(
+        work_application=application, 
+        purpose=Payment.PaymentPurpose.WORK_VISA_50_PERCENT, 
+        status=Payment.PaymentStatus.SUCCESSFUL
+    ).exists()
+    fifty_percent_amount = 0
+    if application.destination_country:
+        fifty_percent_amount = application.destination_country.processing_fee * Decimal('0.50')
+    if request.method == 'POST':
+        doc_type = request.POST.get('doc_type')
+        form = DocumentUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            document_type_enum = Document.DocumentType.RESUME_CV if doc_type == 'cv' else Document.DocumentType.FILLED_APPLICATION_FORM
+            Document.objects.update_or_create(
+                work_application=application,
+                document_type=document_type_enum,
+                defaults={'file': request.FILES['file']}
+            )
+            return JsonResponse({'success': True, 'message': 'Document uploaded successfully!'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    form = DocumentUploadForm()
+    existing_docs = { doc.document_type: doc for doc in application.documents.all() }
+    context = {
+        'form': form, 'admin_document': admin_document, 
+        'application': application, 'payment_made': payment_made,
+        'fifty_percent_amount': fifty_percent_amount,
+        'existing_docs': existing_docs, 'doc_types': Document.DocumentType
+    }
+    return render(request, 'portal/work_employment_form.html', context)
+
+@login_required
+def work_job_offer_view(request):
+    application = request.user.work_application
+    if request.method == 'POST':
+        application.job_offer_accepted = True
+        application.save()
+        return JsonResponse({'success': True, 'message': 'Offer accepted successfully!'})
+    job_offer = Document.objects.filter(work_application=application, document_type=Document.DocumentType.JOB_OFFER, is_admin_upload=True).first()
+    fifty_paid = Payment.objects.filter(work_application=application, purpose=Payment.PaymentPurpose.WORK_VISA_50_PERCENT, status=Payment.PaymentStatus.SUCCESSFUL).exists()
+    final_fifty_paid = Payment.objects.filter(work_application=application, purpose=Payment.PaymentPurpose.WORK_VISA_FINAL_50_PERCENT, status=Payment.PaymentStatus.SUCCESSFUL).exists()
+    twenty_five_paid_count = Payment.objects.filter(work_application=application, purpose=Payment.PaymentPurpose.WORK_VISA_25_PERCENT, status=Payment.PaymentStatus.SUCCESSFUL).count()
+    payment_status = 'none'
+    if final_fifty_paid or twenty_five_paid_count >= 2:
+        payment_status = 'full_paid'
+    elif fifty_paid:
+        payment_status = 'half_paid'
+    remaining_50_percent = 0
+    remaining_25_percent = 0
+    if application.destination_country:
+        total_fee = application.destination_country.processing_fee
+        remaining_50_percent = total_fee * Decimal('0.50')
+        remaining_25_percent = total_fee * Decimal('0.25')
+    context = {
+        'application': application, 'job_offer': job_offer,
+        'payment_status': payment_status, 
+        'remaining_50_percent': remaining_50_percent,
+        'remaining_25_percent': remaining_25_percent
+    }
+    return render(request, 'portal/work_job_offer.html', context)
+
+@login_required
+def work_visa_application_view(request):
+    application = request.user.work_application
+    if request.method == 'POST':
+        if Testimonial.objects.filter(work_application=application).exists():
+            return JsonResponse({'success': False, 'message': 'You have already submitted a testimonial.'}, status=400)
+        form = TestimonialForm(request.POST)
+        if form.is_valid():
+            testimonial = form.save(commit=False)
+            testimonial.work_application = application
+            testimonial.save()
+            application.status = WorkApplication.WorkApplicationStatus.COMPLETED
+            application.save()
+            return JsonResponse({'success': True, 'message': 'Thank you for your feedback!'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    twenty_five_paid_count = Payment.objects.filter(
+        work_application=application, 
+        purpose__in=[Payment.PaymentPurpose.WORK_VISA_25_PERCENT, Payment.PaymentPurpose.WORK_VISA_REMAINING_25_PERCENT], 
+        status=Payment.PaymentStatus.SUCCESSFUL
+    ).count()
+
+    # Determine if the final 25% payment is needed
+    final_payment_needed = (twenty_five_paid_count == 1)
+
+    final_25_percent_amount = 0
+    if application.destination_country:
+        final_25_percent_amount = application.destination_country.processing_fee * Decimal('0.25')
+
+    visa_updates = application.visa_updates.all()
+    testimonial = Testimonial.objects.filter(work_application=application).first()
+    form = TestimonialForm(instance=testimonial)
+    
+    context = {
+        'application': application, 'visa_updates': visa_updates,
+        'testimonial_form': form, 'testimonial': testimonial,
+        'final_payment_needed': final_payment_needed,
+        'final_25_percent_amount': final_25_percent_amount
+    }
+    return render(request, 'portal/work_visa_application.html', context)
 
 # --- Generic Payment & Webhook Views ---
 @login_required
@@ -283,16 +410,24 @@ def initiate_payment(request):
     elif purpose == 'WORK_APP_FEE':
         amount = Decimal('30.00')
         payment_purpose = Payment.PaymentPurpose.WORK_APP_FEE
-    elif purpose in ['WORK_VISA_50_PERCENT', 'WORK_VISA_25_PERCENT']:
+    elif purpose == 'WORK_VISA_50_PERCENT':
+        if not work_application or not work_application.destination_country: return JsonResponse({'error': 'Destination country not selected.'}, status=400)
+        amount = work_application.destination_country.processing_fee * Decimal('0.50')
+        payment_purpose = Payment.PaymentPurpose.WORK_VISA_50_PERCENT
+    # CORRECTED: Added the missing elif block
+    elif purpose == 'WORK_VISA_FINAL_50_PERCENT':
+        if not work_application or not work_application.destination_country: return JsonResponse({'error': 'Destination country not selected.'}, status=400)
+        amount = work_application.destination_country.processing_fee * Decimal('0.50')
+        payment_purpose = Payment.PaymentPurpose.WORK_VISA_FINAL_50_PERCENT
+    elif purpose == 'WORK_VISA_25_PERCENT':
+        if not work_application or not work_application.destination_country: return JsonResponse({'error': 'Destination country not selected.'}, status=400)
+        amount = work_application.destination_country.processing_fee * Decimal('0.25')
+        payment_purpose = Payment.PaymentPurpose.WORK_VISA_25_PERCENT
+    elif purpose == 'WORK_VISA_REMAINING_25_PERCENT':
         if not work_application or not work_application.destination_country:
             return JsonResponse({'error': 'Destination country not selected.'}, status=400)
-        total_fee = work_application.destination_country.processing_fee
-        if purpose == 'WORK_VISA_50_PERCENT':
-            amount = total_fee * Decimal('0.50')
-            payment_purpose = Payment.PaymentPurpose.WORK_VISA_50_PERCENT
-        else:
-            amount = total_fee * Decimal('0.25')
-            payment_purpose = Payment.PaymentPurpose.WORK_VISA_25_PERCENT
+        amount = work_application.destination_country.processing_fee * Decimal('0.25')
+        payment_purpose = Payment.PaymentPurpose.WORK_VISA_REMAINING_25_PERCENT
     else:
         return JsonResponse({'error': 'Invalid payment purpose'}, status=400)
 
@@ -307,7 +442,7 @@ def initiate_payment(request):
         'public_key': settings.FLUTTERWAVE_PUBLIC_KEY, 'tx_ref': tx_ref, 'amount': str(amount),
         'currency': currency, 'redirect_url': redirect_url,
         'customer': {'email': customer_email, 'phonenumber': customer_phone, 'name': customer_name},
-        'customizations': {'title': 'Hadey Travels Global', 'description': payment_purpose, 'logo': 'URL_TO_YOUR_LOGO_IMAGE'}
+        'customizations': {'title': 'Hadey Travels Global', 'description': str(payment_purpose), 'logo': 'URL_TO_YOUR_LOGO_IMAGE'}
     }
     return JsonResponse(payment_data)
 
@@ -350,7 +485,11 @@ def flutterwave_webhook(request):
                     user = application.user
                     if payment.purpose == Payment.PaymentPurpose.WORK_APP_FEE:
                         application.status = WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM
-                    # ... add other worker status updates here ...
+                    elif payment.purpose == Payment.PaymentPurpose.WORK_VISA_50_PERCENT:
+                        application.status = WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER
+                    elif payment.purpose in [Payment.PaymentPurpose.WORK_VISA_FINAL_50_PERCENT, Payment.PaymentPurpose.WORK_VISA_25_PERCENT, Payment.PaymentPurpose.WORK_VISA_REMAINING_25_PERCENT]:
+                        # Any of these final payments moves the user to the visa step
+                        application.status = WorkApplication.WorkApplicationStatus.STEP_4_VISA_APPLICATION
                     application.save()
 
                 if user:

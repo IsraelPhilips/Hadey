@@ -1,0 +1,14 @@
+Subject: Your Job Offer is Ready!
+
+Hi {{ user.username }},
+
+Great news! A job offer has been secured for you and is now ready for your review.
+
+Please log in to your dashboard to download the offer letter, accept the terms, and proceed with the final payment to begin your visa application process.
+
+Dashboard Link: {{ dashboard_url }}
+
+Congratulations on this exciting milestone!
+
+Best regards,
+The HTG Team

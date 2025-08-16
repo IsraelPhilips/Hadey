@@ -17,10 +17,9 @@ urlpatterns = [
 
     # --- Worker Application URLs ---
     path('worker/application/', views.work_application_form_view, name='work_application_form'),
-    # Placeholders for future steps
-    # path('worker/employment-form/', views.worker_employment_form_view, name='worker_employment_form'),
-    # path('worker/job-offer/', views.worker_job_offer_view, name='worker_job_offer'),
-    # path('worker/visa-application/', views.worker_visa_application_view, name='worker_visa_application'),
+    path('worker/employment-form/', views.work_employment_form_view, name='work_employment_form'),
+    path('worker/job-offer/', views.work_job_offer_view, name='work_job_offer'),
+    path('worker/visa-application/', views.work_visa_application_view, name='work_visa_application'),
 
     # --- Generic Payment URLs ---
     path('payment/initiate/', views.initiate_payment, name='initiate_payment'),
