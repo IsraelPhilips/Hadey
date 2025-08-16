@@ -59,7 +59,7 @@ class WorkApplicationForm(forms.ModelForm):
     work_experience_upload = forms.FileField(required=False, label="Work Experience Letters")
     class Meta:
         model = WorkApplication
-        exclude = ['user', 'status', 'visa_status', 'passport_photograph']
+        exclude = ['user', 'status', 'visa_status', 'passport_photograph', 'job_offer_accepted']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'passport_issue_date': forms.DateInput(attrs={'type': 'date'}),
@@ -76,6 +76,14 @@ class WorkApplicationForm(forms.ModelForm):
                 field.widget.attrs.update({'class': base_classes})
         self.fields['destination_country'].queryset = Country.objects.all()
         self.fields['destination_country'].widget.attrs.update({'class': base_classes})
+
+        optional_fields = [
+            'previous_application_details', 'skills_certifications', 'passport_photograph_upload', 'applied_before',
+            'educational_certificate_upload', 'work_experience_upload', 'international_passport_upload'
+        ]
+        for field_name, field in self.fields.items():
+            if 'upload' not in field_name and field_name not in optional_fields:
+                field.required = True
 
 class DocumentUploadForm(forms.ModelForm):
     class Meta:

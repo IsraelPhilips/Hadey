@@ -228,8 +228,18 @@ def work_application_form_view(request):
         purpose=Payment.PaymentPurpose.WORK_APP_FEE, 
         status=Payment.PaymentStatus.SUCCESSFUL
     ).exists()
+
     if request.method == 'POST':
         form = WorkApplicationForm(request.POST, request.FILES, instance=application)
+        
+        is_payment_submission = 'submit_payment' in request.POST
+
+        if is_payment_submission:
+            if not application.passport_photograph and 'passport_photograph_upload' not in request.FILES:
+                form.add_error('passport_photograph_upload', 'Passport photograph is required to proceed.')
+            if not application.documents.filter(document_type=Document.DocumentType.INTERNATIONAL_PASSPORT).exists() and 'international_passport_upload' not in request.FILES:
+                form.add_error('international_passport_upload', 'International passport is required to proceed.')
+
         if form.is_valid():
             application_instance = form.save(commit=False)
             if 'passport_photograph_upload' in request.FILES:
@@ -251,6 +261,7 @@ def work_application_form_view(request):
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = WorkApplicationForm(instance=application)
+    
     existing_docs = { doc.document_type: doc for doc in application.documents.all() }
     context = {
         'form': form, 'payment_made': payment_made,

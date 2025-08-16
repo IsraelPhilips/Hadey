@@ -24,6 +24,7 @@
                         <span class="mt-2 block text-sm font-medium text-primary-green hover:underline">Upload Passport Photograph <span class="text-red-500">*</span></span>
                     </label>
                     <input type="file" name="passport_photograph_upload" id="id_passport_photograph_upload" class="hidden" accept="image/*">
+                    <p class="form-error mt-1 text-sm text-red-600" data-for="passport_photograph_upload"></p>
                 </div>
             </div>
 
@@ -32,18 +33,18 @@
                 <div class="border-t border-gray-200 pt-6">
                     <h2 class="text-xl font-semibold text-dark-green mb-4">1. Personal Information</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div><label class="block text-sm font-medium text-gray-700">Full Name (as per passport) <span class="text-red-500">*</span></label>{{ form.full_name }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Gender <span class="text-red-500">*</span></label>{{ form.gender }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Date of Birth <span class="text-red-500">*</span></label>{{ form.date_of_birth }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Place of Birth <span class="text-red-500">*</span></label>{{ form.place_of_birth }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Nationality <span class="text-red-500">*</span></label>{{ form.nationality }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Passport Number <span class="text-red-500">*</span></label>{{ form.passport_number }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Passport Issue Date <span class="text-red-500">*</span></label>{{ form.passport_issue_date }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Passport Expiry Date <span class="text-red-500">*</span></label>{{ form.passport_expiry_date }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Marital Status <span class="text-red-500">*</span></label>{{ form.marital_status }}</div>
-                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Current Address <span class="text-red-500">*</span></label>{{ form.current_address }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Contact Number <span class="text-red-500">*</span></label>{{ form.contact_number }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>{{ form.email }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Full Name (as per passport) <span class="text-red-500">*</span></label>{{ form.full_name }}<p class="form-error mt-1 text-sm text-red-600" data-for="full_name"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Gender <span class="text-red-500">*</span></label>{{ form.gender }}<p class="form-error mt-1 text-sm text-red-600" data-for="gender"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Date of Birth <span class="text-red-500">*</span></label>{{ form.date_of_birth }}<p class="form-error mt-1 text-sm text-red-600" data-for="date_of_birth"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Place of Birth <span class="text-red-500">*</span></label>{{ form.place_of_birth }}<p class="form-error mt-1 text-sm text-red-600" data-for="place_of_birth"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Nationality <span class="text-red-500">*</span></label>{{ form.nationality }}<p class="form-error mt-1 text-sm text-red-600" data-for="nationality"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Number <span class="text-red-500">*</span></label>{{ form.passport_number }}<p class="form-error mt-1 text-sm text-red-600" data-for="passport_number"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Issue Date <span class="text-red-500">*</span></label>{{ form.passport_issue_date }}<p class="form-error mt-1 text-sm text-red-600" data-for="passport_issue_date"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Expiry Date <span class="text-red-500">*</span></label>{{ form.passport_expiry_date }}<p class="form-error mt-1 text-sm text-red-600" data-for="passport_expiry_date"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Marital Status <span class="text-red-500">*</span></label>{{ form.marital_status }}<p class="form-error mt-1 text-sm text-red-600" data-for="marital_status"></p></div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Current Address <span class="text-red-500">*</span></label>{{ form.current_address }}<p class="form-error mt-1 text-sm text-red-600" data-for="current_address"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Contact Number <span class="text-red-500">*</span></label>{{ form.contact_number }}<p class="form-error mt-1 text-sm text-red-600" data-for="contact_number"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>{{ form.email }}<p class="form-error mt-1 text-sm text-red-600" data-for="email"></p></div>
                     </div>
                 </div>
 
@@ -51,14 +52,15 @@
                 <div class="border-t border-gray-200 pt-6">
                     <h2 class="text-xl font-semibold text-dark-green mb-4">2. Employment & Visa Details</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div><label class="block text-sm font-medium text-gray-700">Job Title/Position Applying For <span class="text-red-500">*</span></label>{{ form.job_title }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Sponsor (Self, Father, etc.) <span class="text-red-500">*</span></label>{{ form.sponsor }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Country of Work Destination <span class="text-red-500">*</span></label>{{ form.destination_country }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Job Title/Position Applying For <span class="text-red-500">*</span></label>{{ form.job_title }}<p class="form-error mt-1 text-sm text-red-600" data-for="job_title"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Sponsor (Self, Father, etc.) <span class="text-red-500">*</span></label>{{ form.sponsor }}<p class="form-error mt-1 text-sm text-red-600" data-for="sponsor"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Country of Work Destination <span class="text-red-500">*</span></label>{{ form.destination_country }}<p class="form-error mt-1 text-sm text-red-600" data-for="destination_country"></p></div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Have you ever applied for a work visa before? <span class="text-red-500">*</span></label>
                             <div class="mt-2 space-x-4">{{ form.applied_before }}</div>
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="applied_before"></p>
                         </div>
-                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">If yes, provide details (Country, Year, Status)</label>{{ form.previous_application_details }}</div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">If yes, provide details (Country, Year, Status)</label>{{ form.previous_application_details }}<p class="form-error mt-1 text-sm text-red-600" data-for="previous_application_details"></p></div>
                     </div>
                 </div>
                 
@@ -66,10 +68,10 @@
                 <div class="border-t border-gray-200 pt-6">
                     <h2 class="text-xl font-semibold text-dark-green mb-4">3. Educational & Professional Background</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div><label class="block text-sm font-medium text-gray-700">Highest Educational Qualification <span class="text-red-500">*</span></label>{{ form.highest_qualification }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Field of Study <span class="text-red-500">*</span></label>{{ form.field_of_study }}</div>
-                        <div><label class="block text-sm font-medium text-gray-700">Years of Work Experience <span class="text-red-500">*</span></label>{{ form.years_of_experience }}</div>
-                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Skills/Certifications Relevant to the Job</label>{{ form.skills_certifications }}</div>
+                        <div><label class="block text-sm font-medium text-gray-700">Highest Educational Qualification <span class="text-red-500">*</span></label>{{ form.highest_qualification }}<p class="form-error mt-1 text-sm text-red-600" data-for="highest_qualification"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Field of Study <span class="text-red-500">*</span></label>{{ form.field_of_study }}<p class="form-error mt-1 text-sm text-red-600" data-for="field_of_study"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Years of Work Experience <span class="text-red-500">*</span></label>{{ form.years_of_experience }}<p class="form-error mt-1 text-sm text-red-600" data-for="years_of_experience"></p></div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Skills/Certifications Relevant to the Job</label>{{ form.skills_certifications }}<p class="form-error mt-1 text-sm text-red-600" data-for="skills_certifications"></p></div>
                     </div>
                 </div>
 
@@ -90,6 +92,7 @@
                                 {{ form.international_passport_upload }}
                             {% endif %}
                             {% endwith %}
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="international_passport_upload"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Educational Certificate (if any)</label>
@@ -104,6 +107,7 @@
                                 {{ form.educational_certificate_upload }}
                             {% endif %}
                             {% endwith %}
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="educational_certificate_upload"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Work Experience Letters</label>
@@ -118,6 +122,7 @@
                                 {{ form.work_experience_upload }}
                             {% endif %}
                             {% endwith %}
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="work_experience_upload"></p>
                         </div>
                     </div>
                 </div>
@@ -131,6 +136,7 @@
                             <label for="id_declaration_agreed" class="font-medium text-gray-700">I hereby declare that all the information provided is true and accurate to the best of my knowledge. <span class="text-red-500">*</span></label>
                         </div>
                     </div>
+                    <p class="form-error mt-1 text-sm text-red-600" data-for="declaration_agreed"></p>
                 </div>
             </div>
 
@@ -140,7 +146,7 @@
                 </button>
                 
                 {% if not payment_made %}
-                <button type="submit" id="submitBtn" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
+                <button type="submit" id="submitBtn" name="submit_payment" value="1" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
                     Proceed to Payment ($30)
                 </button>
                 {% else %}
@@ -168,62 +174,80 @@
         }
     });
 
-    const declarationCheckbox = document.getElementById('id_declaration_agreed');
+    const form = document.getElementById('workApplicationForm');
     const submitBtn = document.getElementById('submitBtn');
     const updateBtn = document.getElementById('updateBtn');
-    const form = document.getElementById('workApplicationForm');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const declarationCheckbox = document.getElementById('id_declaration_agreed');
 
-    if (submitBtn) {
-        declarationCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                submitBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-                submitBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+    function clearErrors() {
+        document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+    }
+
+    function displayErrors(errors) {
+        clearErrors();
+        for (const [field, error_list] of Object.entries(errors)) {
+            const errorEl = document.querySelector(`.form-error[data-for="${field}"]`);
+            if (errorEl) {
+                errorEl.textContent = error_list[0];
             }
-        });
+        }
+    }
 
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Saving...';
-            const formData = new FormData(form);
-            fetch("{% url 'portal:work_application_form' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken} })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    submitBtn.innerHTML = 'Redirecting to Payment...';
+    function handleFormSubmit(event, isPaymentFlow) {
+        event.preventDefault();
+        const button = isPaymentFlow ? submitBtn : updateBtn;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = isPaymentFlow ? 'Saving...' : 'Updating...';
+        
+        const formData = new FormData(form);
+        if (isPaymentFlow) {
+            formData.append('submit_payment', '1');
+        }
+
+        fetch("{% url 'portal:work_application_form' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken} })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+            if (ok && data.success) {
+                if (isPaymentFlow) {
+                    button.innerHTML = 'Redirecting to Payment...';
                     initiatePayment();
                 } else {
-                    alert('Please fill out all required fields and upload all required documents.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Save and Proceed to Payment ($30)';
-                    declarationCheckbox.dispatchEvent(new Event('change'));
+                    alert('Information updated successfully!');
+                    location.reload();
                 }
-            });
+            } else {
+                throw data.errors || { __all__: ['An unknown error occurred.'] };
+            }
+        })
+        .catch(errors => {
+            displayErrors(errors);
+            button.disabled = false;
+            button.innerHTML = originalText;
+            if (isPaymentFlow) {
+                togglePaymentButtonState();
+            }
         });
     }
 
-    updateBtn.addEventListener('click', function() {
-        updateBtn.disabled = true;
-        updateBtn.innerHTML = 'Updating...';
-        const formData = new FormData(form);
-        fetch("{% url 'portal:work_application_form' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken} })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                alert('Information updated successfully!');
-            } else {
-                alert('There was an error updating your information. Please check all required fields.');
-            }
-            updateBtn.disabled = false;
-            updateBtn.innerHTML = 'Update Information';
-        });
-    });
+    if (submitBtn) {
+        declarationCheckbox.addEventListener('change', togglePaymentButtonState);
+        submitBtn.addEventListener('click', (e) => handleFormSubmit(e, true));
+    }
+    updateBtn.addEventListener('click', (e) => handleFormSubmit(e, false));
+
+    function togglePaymentButtonState() {
+        if (!submitBtn) return;
+        submitBtn.disabled = !declarationCheckbox.checked;
+        if (declarationCheckbox.checked) {
+            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+        } else {
+            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+        }
+    }
     
     function initiatePayment() {
         const payload = { purpose: 'WORK_APP_FEE' };
@@ -240,10 +264,24 @@
                 onclose: function() {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'Save and Proceed to Payment ($30)';
-                    declarationCheckbox.dispatchEvent(new Event('change'));
+                    togglePaymentButtonState();
                 },
             });
         });
     }
+    
+    document.addEventListener('DOMContentLoaded', togglePaymentButtonState);
+
+    document.querySelectorAll('label[for^="id_"]').forEach(label => {
+        if (label.textContent === 'Replace') {
+            const inputId = label.getAttribute('for');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('change', () => {
+                    updateBtn.click();
+                });
+            }
+        }
+    });
 </script>
 {% endblock %}
