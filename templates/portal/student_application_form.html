@@ -108,8 +108,8 @@
                             <label class="block text-sm font-medium text-gray-700">International Passport <span class="text-red-500">*</span></label>
                             {% with doc=existing_docs|get_item:doc_types.INTERNATIONAL_PASSPORT %}
                             {% if doc %}
-                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
-                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                <div class="mt-1 flex flex-col md:flex-row items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800 w-full">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
                                     <label for="id_international_passport_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
                                 </div>
                                 <input type="file" name="international_passport_upload" id="id_international_passport_upload" class="hidden">
@@ -124,7 +124,7 @@
                             <label class="block text-sm font-medium text-gray-700">WAEC or NECO Certificate <span class="text-red-500">*</span></label>
                             {% with doc=existing_docs|get_item:doc_types.SCHOOL_CERTIFICATE %}
                             {% if doc %}
-                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                <div class="mt-1 flex flex-col md:flex-row items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
                                     <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
                                     <label for="id_school_certificate_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
                                 </div>
@@ -140,7 +140,7 @@
                             <label class="block text-sm font-medium text-gray-700">Birth Certificate <span class="text-red-500">*</span></label>
                             {% with doc=existing_docs|get_item:doc_types.BIRTH_CERTIFICATE %}
                             {% if doc %}
-                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                <div class="mt-1 flex flex-col md:flex-row items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
                                     <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
                                     <label for="id_birth_certificate_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
                                 </div>

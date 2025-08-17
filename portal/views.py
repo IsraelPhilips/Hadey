@@ -41,7 +41,7 @@ def student_dashboard(request):
     ALL_STEPS = [
         {'id': Application.ApplicationStatus.STEP_1_APPLICATION_FORM, 'title': 'Application Form', 'number': 1, 'url_name': 'portal:student_application_form'},
         {'id': Application.ApplicationStatus.STEP_2_ADMISSION_FEE, 'title': 'Admission Form', 'number': 2, 'url_name': 'portal:student_document_submission'},
-        {'id': Application.ApplicationStatus.STEP_3_AGENCY_FEE, 'title': 'Agency Fee', 'number': 3, 'url_name': 'portal:student_agency_fee'},
+        {'id': Application.ApplicationStatus.STEP_3_AGENCY_FEE, 'title': 'Agency Service', 'number': 3, 'url_name': 'portal:student_agency_fee'},
         {'id': Application.ApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': 'portal:student_visa_application'},
     ]
     current_status = application.status
@@ -195,8 +195,8 @@ def worker_dashboard(request):
     application, _ = WorkApplication.objects.get_or_create(user=request.user)
     ALL_STEPS = [
         {'id': WorkApplication.WorkApplicationStatus.STEP_1_APPLICATION_FORM, 'title': 'Application Form', 'number': 1, 'url_name': 'portal:work_application_form'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM, 'title': 'Employment Form & 50% Fee', 'number': 2, 'url_name': 'portal:work_employment_form'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER, 'title': 'Job Offer & Final Fee', 'number': 3, 'url_name': 'portal:work_job_offer'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM, 'title': 'Employment Processing Form', 'number': 2, 'url_name': 'portal:work_employment_form'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER, 'title': 'Employment Offer Letter', 'number': 3, 'url_name': 'portal:work_job_offer'},
         {'id': WorkApplication.WorkApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': 'portal:work_visa_application'},
     ]
     current_status = application.status

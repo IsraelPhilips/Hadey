@@ -1,0 +1,175 @@
+<!-- templates/portal/partials/instructions_modal.html -->
+<div id="instructionsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
+    <div id="modalContent" class="bg-white w-full max-w-3xl rounded-xl shadow-2xl transform transition-all duration-300 ease-out scale-95 opacity-0">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-5 border-b">
+            <h3 class="text-xl font-bold text-dark-green">How to Use The Application Portal</h3>
+            <button id="closeInstructionsModal" class="text-gray-400 hover:text-gray-700">&times;</button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="p-2 bg-gray-50 border-b">
+            <nav class="flex space-x-2" aria-label="Tabs">
+                <button class="tab-button active" data-tab="student">Student Visa Application</button>
+                <button class="tab-button" data-tab="worker">Work Visa Application</button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-6 max-h-[60vh] overflow-y-auto">
+            <!-- Student Tab -->
+            <div id="student-tab-content" class="tab-content space-y-4">
+                <h4 class="text-lg font-semibold text-dark-green">Student Visa Application Services – 4 Simple Steps</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700">
+                    <li>
+                        <strong class="font-semibold text-gray-800">Application Form</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>Fill out the form accurately.</li>
+                            <li>Upload all required documents.</li>
+                            <li>Make application fee payment.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-800">Admission Form/Admission Letter</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>After submitting the application form, download the Admission Form from your portal.</li>
+                            <li>Fill it out, upload it back, and pay the Admission Processing Fee.</li>
+                            <li>Once ready, download your Admission Letter from the portal.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-800">Agency Service</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>After receiving your admission letter, pay the Agency Fee.</li>
+                            <li>Payment options: Full payment upfront, or 50% payment with the balance due later.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-800">Visa Application</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>Complete visa requirements; provide necessary documents for submission.</li>
+                            <li>If you paid 50% initially of the agency fee, clear the remaining balance upon visa approval.</li>
+                            <li>Give us a review and share your testimonials.</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Worker Tab -->
+            <div id="worker-tab-content" class="tab-content hidden space-y-4">
+                <h4 class="text-lg font-semibold text-dark-green">Work Visa Application Services – 4 Simple Steps</h4>
+                <ol class="list-decimal list-inside space-y-3 text-gray-700">
+                    <li>
+                        <strong class="font-semibold text-gray-800">Application Form</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>Fill out the form accurately.</li>
+                            <li>Upload all required documents.</li>
+                            <li>Make application fee payment and submit.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-800">Employment Processing Form</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>After submitting the application form, download the Employment Form.</li>
+                            <li>Fill it out, upload it back, and make the required payment (50% of the total processing fee).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-800">Employment Offer Letter</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>Download your Employment Offer Letter.</li>
+                            <li>Review it, Confirm and approve your acceptance of the offer.</li>
+                            <li>Make the necessary payment: remaining 50% balance or 25% of the remaining balance.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="font-semibold text-gray-800">Visa Application</strong>
+                        <ul class="list-disc list-inside pl-4 mt-1 text-sm text-gray-600">
+                            <li>Complete visa requirements; provide necessary documents for submission.</li>
+                            <li>If you paid 25% earlier, clear the remaining balance upon visa approval.</li>
+                            <li>Give us a review and share your testimonials.</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border-radius: 0.375rem;
+        color: #4B5563; /* gray-600 */
+        transition: all 0.2s ease-in-out;
+    }
+    .tab-button.active {
+        background-color: white;
+        color: #4AAB48; /* primary-green */
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    .tab-button:not(.active):hover {
+        background-color: #F3F4F6; /* gray-100 */
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('instructionsModal');
+        const modalContent = document.getElementById('modalContent');
+        const openBtn = document.getElementById('openInstructionsBtn');
+        const closeBtn = document.getElementById('closeInstructionsModal');
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+
+        if (openBtn) {
+            openBtn.addEventListener('click', openModal);
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                tabContents.forEach(content => {
+                    if (content.id === `${target}-tab-content`) {
+                        content.classList.remove('hidden');
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    });
+</script>
