@@ -1,6 +1,8 @@
 # portal/admin.py
 
 from django.contrib import admin
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import (
     Application, Document, Payment, VisaUpdate, Testimonial, 
     UserProfile, WorkApplication, Country
@@ -21,28 +23,61 @@ class HadeyAdminSite(admin.AdminSite):
 
 hadey_admin_site = HadeyAdminSite(name='hadey_admin')
 
-# --- Inlines ---
-class VisaUpdateInline(admin.TabularInline):
+# --- Inlines for STUDENT Application ---
+class StudentVisaUpdateInline(admin.TabularInline):
     model = VisaUpdate
     extra = 1
     readonly_fields = ('created_at',)
     fields = ('status_title', 'details', 'send_email_notification', 'created_at')
     exclude = ('work_application',)
+    verbose_name = "Student Visa Update"
+    verbose_name_plural = "Student Visa Updates"
 
-class DocumentInline(admin.TabularInline):
+class StudentDocumentInline(admin.TabularInline):
     model = Document
     extra = 1
     readonly_fields = ('uploaded_at',)
     fields = ('document_type', 'file', 'is_admin_upload', 'uploaded_at')
     exclude = ('work_application',)
+    verbose_name = "Student Document"
+    verbose_name_plural = "Student Documents"
 
-class PaymentInline(admin.TabularInline):
+class StudentPaymentInline(admin.TabularInline):
     model = Payment
     extra = 0
     readonly_fields = ('amount', 'status', 'purpose', 'tx_ref', 'created_at')
     can_delete = False
     exclude = ('work_application',)
-    def has_add_permission(self, request, obj=None): return False
+    verbose_name = "Student Payment"
+    verbose_name_plural = "Student Payments"
+
+# --- Inlines for WORK Application ---
+class WorkerVisaUpdateInline(admin.TabularInline):
+    model = VisaUpdate
+    extra = 1
+    readonly_fields = ('created_at',)
+    fields = ('status_title', 'details', 'send_email_notification', 'created_at')
+    exclude = ('application',)
+    verbose_name = "Worker Visa Update"
+    verbose_name_plural = "Worker Visa Updates"
+
+class WorkerDocumentInline(admin.TabularInline):
+    model = Document
+    extra = 1
+    readonly_fields = ('uploaded_at',)
+    fields = ('document_type', 'file', 'is_admin_upload', 'uploaded_at')
+    exclude = ('application',)
+    verbose_name = "Worker Document"
+    verbose_name_plural = "Worker Documents"
+
+class WorkerPaymentInline(admin.TabularInline):
+    model = Payment
+    extra = 0
+    readonly_fields = ('amount', 'status', 'purpose', 'tx_ref', 'created_at')
+    can_delete = False
+    exclude = ('application',)
+    verbose_name = "Worker Payment"
+    verbose_name_plural = "Worker Payments"
 
 # --- ModelAdmins ---
 class ApplicationAdmin(admin.ModelAdmin): # Student Application Admin
@@ -50,7 +85,7 @@ class ApplicationAdmin(admin.ModelAdmin): # Student Application Admin
     list_filter = ('status', 'visa_status', 'country_of_interest')
     search_fields = ('user__username', 'full_name', 'email')
     ordering = ('-updated_at',)
-    inlines = [VisaUpdateInline, DocumentInline, PaymentInline]
+    inlines = [StudentVisaUpdateInline, StudentDocumentInline, StudentPaymentInline]
     # Fieldsets would need to be updated with all the new student fields
 
 class WorkApplicationAdmin(admin.ModelAdmin):
@@ -58,7 +93,17 @@ class WorkApplicationAdmin(admin.ModelAdmin):
     list_filter = ('status', 'destination_country')
     search_fields = ('user__username', 'full_name', 'email')
     ordering = ('-updated_at',)
-    # Inlines for work application can be added here later
+    inlines = [WorkerVisaUpdateInline, WorkerDocumentInline, WorkerPaymentInline]
+    
+    fieldsets = (
+        ('Core Info', {'fields': ('user', 'status', 'visa_status', 'passport_photograph')}),
+        ('Personal Information', {'classes': ('collapse',), 'fields': ('full_name', 'gender', 'date_of_birth', 'place_of_birth', 'nationality', 'passport_number', 'passport_issue_date', 'passport_expiry_date', 'marital_status', 'current_address', 'contact_number', 'email')}),
+        ('Employment & Visa Details', {'classes': ('collapse',), 'fields': ('job_title', 'sponsor', 'destination_country', 'applied_before', 'previous_application_details')}),
+        ('Professional Background', {'classes': ('collapse',), 'fields': ('highest_qualification', 'field_of_study', 'years_of_experience', 'skills_certifications')}),
+        ('Consent', {'fields': ('declaration_agreed', 'job_offer_accepted')}),
+        ('Timestamps', {'classes': ('collapse',), 'fields': ('created_at', 'updated_at')}),
+    )
+    readonly_fields = ('created_at', 'updated_at')
 
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('name', 'processing_fee')
@@ -74,7 +119,10 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'get_account_type')
 
     def get_account_type(self, instance):
-        return instance.profile.get_account_type_display()
+        try:
+            return instance.profile.get_account_type_display()
+        except UserProfile.DoesNotExist:
+            return "No Profile"
     get_account_type.short_description = 'Account Type'
 
 class UserProfileAdmin(admin.ModelAdmin):
@@ -92,6 +140,9 @@ hadey_admin_site.register(Payment)
 hadey_admin_site.register(UserProfile, UserProfileAdmin)
 
 # Re-register User to our custom site, unregistering the base one first
-admin.site.unregister(User)
+try:
+    admin.site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
 hadey_admin_site.register(User, UserAdmin)
 hadey_admin_site.register(Group)

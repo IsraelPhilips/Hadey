@@ -33,6 +33,28 @@
     </script>
 
     {% load static %}
+    
+    <!-- 4. Google Translate Widget Scripts -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+          new google.translate.TranslateElement({
+            pageLanguage: 'en', 
+            includedLanguages: 'en,yo,ig,ha,fr,sw,zu,am,so,rw,mg,st,sn,ny', 
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+          }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <!-- 5. Custom Styles for the NEW Translate Widget -->
+    <style>
+        /* Hide the default Google Translate elements */
+        .goog-te-banner-frame.skiptranslate { display: none !important; } 
+        body { top: 0px !important; }
+        #google_translate_element { display: none; }
+    </style>
+
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-green-50 font-sans antialiased">
     
@@ -44,14 +66,39 @@
                     <img src="{% static 'images/logo.png' %}" alt="Hadey Travels Global Logo" class="h-12">
                 </a>
             </div>
-            <div>
+            <div class="flex items-center space-x-4">
+                <!-- Custom Language Selector -->
+                <div class="relative">
+                    <select id="custom_translate_select" class="font-sans font-semibold text-sm text-gray-700 bg-gray-50 border border-gray-300 rounded-md py-2 pl-3 pr-8 appearance-none cursor-pointer hover:border-primary-green focus:outline-none focus:ring-2 focus:ring-primary-green/50 transition-colors">
+                        <option value="en">English</option>
+                        <option value="yo">Yoruba</option>
+                        <option value="ig">Igbo</option>
+                        <option value="ha">Hausa</option>
+                        <option value="fr">French</option>
+                        <option value="sw">Swahili</option>
+                        <option value="zu">Zulu</option>
+                        <option value="am">Amharic</option>
+                        <option value="so">Somali</option>
+                        <option value="rw">Kinyarwanda</option>
+                        <option value="mg">Malagasy</option>
+                        <option value="st">Sesotho</option>
+                        <option value="sn">Shona</option>
+                        <option value="ny">Chichewa</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+
+                <!-- Hidden Google Translate Widget -->
+                <div id="google_translate_element" class="hidden"></div>
+
                 {% if user.is_authenticated %}
-                    <a href="{% url 'portal:dashboard' %}" class="text-gray-700 hover:text-primary-green mx-4">Dashboard</a>
-                    <a href="{% url 'account_logout' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Logout</a>
+                    <a href="{% url 'portal:dashboard' %}" class="text-gray-700 hover:text-primary-green hidden sm:inline">Dashboard</a>
+                    <a href="{% url 'account_logout' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors text-sm font-semibold">Logout</a>
                 {% else %}
-                    <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-primary-green mx-4">Sign In</a>
-                    <!-- CORRECTED: Points to the new choice page -->
-                    <a href="{% url 'account_signup_choice' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors">Sign Up</a>
+                    <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-primary-green hidden sm:inline">Sign In</a>
+                    <a href="{% url 'account_signup_choice' %}" class="bg-primary-green text-white rounded-md px-4 py-2 hover:bg-dark-green transition-colors text-sm font-semibold">Sign Up</a>
                 {% endif %}
             </div>
         </nav>
@@ -71,5 +118,37 @@
         </div>
     </footer>
 
+    <!-- CORRECTED: New, more robust JavaScript for translation -->
+    <script type="text/javascript">
+        function setLanguage(lang) {
+            // Set the 'googtrans' cookie, which the Google script reads on page load
+            document.cookie = "googtrans=/en/" + lang + ";path=/";
+            // Reload the page to apply the translation
+            location.reload();
+        }
+
+        function getCookie(name) {
+            let c = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+            return c ? c[2] : null;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const customSelect = document.getElementById('custom_translate_select');
+            
+            // Sync our custom dropdown with the current language from the cookie
+            const currentLangCookie = getCookie('googtrans');
+            if (currentLangCookie) {
+                const currentLang = currentLangCookie.split('/').pop();
+                if (customSelect.querySelector('option[value="' + currentLang + '"]')) {
+                    customSelect.value = currentLang;
+                }
+            }
+
+            // When the user changes our dropdown, set the cookie and reload
+            customSelect.addEventListener('change', function() {
+                setLanguage(this.value);
+            });
+        });
+    </script>
 </body>
 </html>

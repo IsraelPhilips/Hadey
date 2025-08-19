@@ -199,7 +199,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # For a real SMTP server (like SendGrid, Mailgun, or Gmail) in production,
 # you would uncomment and fill these out, preferably using environment variables.
-EMAIL_HOST = 'mail.hadeytravelsglobal.com'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')

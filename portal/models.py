@@ -22,6 +22,11 @@ class Country(models.Model):
         return self.name
 
 class Application(models.Model): # STUDENT Application
+    class Meta:
+        # This sets the display name in the admin panel
+        verbose_name = "Student Application"
+        verbose_name_plural = "Student Applications"
+
     class ApplicationStatus(models.TextChoices):
         STEP_1_APPLICATION_FORM = 'STEP_1_APPLICATION_FORM', 'Step 1: Application Form'
         STEP_2_ADMISSION_FEE = 'STEP_2_ADMISSION_FEE', 'Step 2: Admission Fee'
@@ -81,6 +86,11 @@ class Application(models.Model): # STUDENT Application
         return f"Student Application for {self.user.username}"
 
 class WorkApplication(models.Model):
+    class Meta:
+        # This sets the display name in the admin panel
+        verbose_name = "Work Application"
+        verbose_name_plural = "Work Applications"
+        
     class WorkApplicationStatus(models.TextChoices):
         STEP_1_APPLICATION_FORM = 'STEP_1_APPLICATION_FORM', 'Step 1: Application Form'
         STEP_2_EMPLOYMENT_FORM = 'STEP_2_EMPLOYMENT_FORM', 'Step 2: Employment Form & 50% Fee'
@@ -127,18 +137,25 @@ class WorkApplication(models.Model):
 
 class Document(models.Model):
     class DocumentType(models.TextChoices):
+        # Student Path
         INTERNATIONAL_PASSPORT = 'INTERNATIONAL_PASSPORT', 'International Passport'
         SCHOOL_CERTIFICATE = 'SCHOOL_CERTIFICATE', 'School Certificate (WAEC/NECO)'
         BIRTH_CERTIFICATE = 'BIRTH_CERTIFICATE', 'Birth Certificate'
-        FILLED_APPLICATION_FORM = 'FILLED_APPLICATION_FORM', 'Filled Application Form (Step 2)'
         ADMISSION_LETTER = 'ADMISSION_LETTER', 'Admission Letter'
-        BLANK_FORM_TEMPLATE = 'BLANK_FORM_TEMPLATE', 'Blank Student Form Template'
+        BLANK_ADMISSION_FORM = 'BLANK_ADMISSION_FORM', 'Blank Admission Form'
+        FILLED_ADMISSION_FORM = 'FILLED_ADMISSION_FORM', 'Filled Admission Form'
+        
+        # Worker Path
         RESUME_CV = 'RESUME_CV', 'Resume/CV'
         WORK_EXPERIENCE_LETTER = 'WORK_EXPERIENCE_LETTER', 'Work Experience Letter'
         JOB_OFFER = 'JOB_OFFER', 'Job Offer'
-        BLANK_EMPLOYMENT_FORM = 'BLANK_EMPLOYMENT_FORM', 'Blank Employment Form Template'
+        BLANK_EMPLOYMENT_FORM = 'BLANK_EMPLOYMENT_FORM', 'Blank Employment Form'
+        FILLED_EMPLOYMENT_FORM = 'FILLED_EMPLOYMENT_FORM', 'Filled Employment Form'
+
+    # CORRECTED: These are now tied to one or the other, never global for these types
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='documents', blank=True, null=True)
     work_application = models.ForeignKey(WorkApplication, on_delete=models.CASCADE, related_name='documents', blank=True, null=True)
+    
     document_type = models.CharField(max_length=50, choices=DocumentType.choices)
     file = models.FileField(upload_to='documents/')
     is_admin_upload = models.BooleanField(default=False)
