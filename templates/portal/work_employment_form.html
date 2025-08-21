@@ -12,27 +12,27 @@
 
         <div class="space-y-6">
             <div class="p-5 border rounded-lg bg-gray-50">
-                <h2 class="text-lg font-semibold text-dark-green mb-4">1. Upload Documents</h2>
-                <div class="space-y-6">
-                    <div class="p-4 border-l-4 border-gray-200">
-                        <h3 class="font-semibold text-gray-800">Download Employment Form</h3>
-                        {% if admin_document %}
-                            <p class="text-sm text-gray-600 mt-1">Download the form, fill it out, and upload it back below.</p>
-                            <a href="{{ admin_document.file.url }}" download class="mt-2 inline-flex items-center px-3 py-1.5 bg-primary-green text-white font-semibold rounded-md hover:bg-dark-green text-xs">
-                                Download Form
-                            </a>
-                        {% else %}
-                            <p class="mt-1 text-sm text-amber-700">The admin has not uploaded the employment form template yet.</p>
-                        {% endif %}
-                    </div>
+                <h2 class="text-lg font-semibold text-dark-green">1. Download Employment Form</h2>
+                {% if admin_document %}
+                    <p class="text-sm text-gray-600 mt-1">The admin has provided the necessary form for your application. Please download, fill it out, and upload it back below.</p>
+                    <a href="{{ admin_document.file.url }}" download class="mt-2 inline-flex items-center px-3 py-1.5 bg-primary-green text-white font-semibold rounded-md hover:bg-dark-green text-xs">
+                        Download Form
+                    </a>
+                {% else %}
+                    <p class="mt-1 text-sm text-amber-700 bg-amber-100 p-3 rounded-md">The admin has not uploaded the employment form template yet. Please check back later.</p>
+                {% endif %}
+            </div>
 
-                    <!-- Filled Form Upload Section -->
-                    <div id="form-upload-section" class="p-4 border-l-4 border-gray-200">
+            {% if admin_document %}
+            <div class="p-5 border rounded-lg bg-gray-50">
+                <h2 class="text-lg font-semibold text-dark-green mb-4">2. Upload Documents</h2>
+                <div class="space-y-6">
+                    <div id="form-upload-section">
                         <label class="block text-sm font-medium text-gray-700">Upload Filled Employment Form <span class="text-red-500">*</span></label>
-                        {% with doc=existing_docs|get_item:doc_types.FILLED_APPLICATION_FORM %}
+                        {% with doc=existing_docs|get_item:doc_types.FILLED_EMPLOYMENT_FORM %}
                         {% if doc %}
-                            <div class="mt-1 flex flex-col md:flex-row items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
-                                <p class="text-sm text-green-800 w-full">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                            <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
                                 <label for="id_filled_form_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
                             </div>
                             <form class="hidden-form" data-doc-type="form"><input type="file" name="file" id="id_filled_form_upload" class="hidden" required></form>
@@ -47,13 +47,12 @@
                         {% endwith %}
                     </div>
 
-                    <!-- CV Upload Section -->
-                    <div id="cv-upload-section" class="p-4 border-l-4 border-gray-200">
+                    <div id="cv-upload-section">
                         <label class="block text-sm font-medium text-gray-700">Upload Resume/CV <span class="text-red-500">*</span></label>
                         {% with doc=existing_docs|get_item:doc_types.RESUME_CV %}
                         {% if doc %}
-                            <div class="mt-1 flex flex-col md:flex-row items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
-                                <p class="text-sm text-green-800 w-full">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                            <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
                                 <label for="id_cv_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
                             </div>
                             <form class="hidden-form" data-doc-type="cv"><input type="file" name="file" id="id_cv_upload" class="hidden" required></form>
@@ -72,7 +71,7 @@
             
             {% if not payment_made %}
             <div class="p-5 border rounded-lg bg-gray-50" id="paymentSection">
-                <h2 class="text-lg font-semibold text-dark-green">2. Pay 50% of Processing Fee</h2>
+                <h2 class="text-lg font-semibold text-dark-green">3. Pay 50% of Processing Fee</h2>
                 {% if application.destination_country %}
                 <p class="text-sm text-gray-600 mt-1">The total fee for {{ application.destination_country.name }} is ${{ application.destination_country.processing_fee|floatformat:2 }}. Please pay the initial 50% to proceed.</p>
                 <button id="paymentBtn" disabled class="mt-4 w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
@@ -88,6 +87,7 @@
                  <p class="text-sm text-gray-600 mt-1">The 50% processing fee has been paid successfully.</p>
             </div>
             {% endif %}
+            {% endif %}
         </div>
     </div>
 </div>
@@ -95,10 +95,10 @@
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script>
     const paymentBtn = document.getElementById('paymentBtn');
-    const csrfToken = '{{ csrf_token }}';
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
 
     let cvUploaded = {{ existing_docs|get_item:doc_types.RESUME_CV|yesno:"true,false" }};
-    let formUploaded = {{ existing_docs|get_item:doc_types.FILLED_APPLICATION_FORM|yesno:"true,false" }};
+    let formUploaded = {{ existing_docs|get_item:doc_types.FILLED_EMPLOYMENT_FORM|yesno:"true,false" }};
 
     function checkPaymentButtonState() {
         if (paymentBtn) {
@@ -120,48 +120,23 @@
         const submitButton = formElement.querySelector('button[type="submit"]');
 
         const uploadAction = (event) => {
-            event.preventDefault();
-            if (!fileInput.files[0]) {
-                alert("Please select a file to upload.");
-                return;
-            }
+            if (event.type === 'submit') event.preventDefault();
+            if (!fileInput.files[0]) { alert("Please select a file."); return; }
             
             const originalBtnText = submitButton ? submitButton.innerHTML : null;
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '...';
-            }
+            if (submitButton) { submitButton.disabled = true; submitButton.innerHTML = '...'; }
 
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', csrfToken);
             formData.append('doc_type', docType);
             formData.append('file', fileInput.files[0]);
 
-            fetch("{% url 'portal:work_employment_form' %}", {
-                method: 'POST', body: formData
-            })
+            fetch("{% url 'portal:work_employment_form' %}", { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    if (docType === 'cv') cvUploaded = true;
-                    if (docType === 'form') formUploaded = true;
-                    checkPaymentButtonState();
                     alert('Upload successful!');
-                    // Replace the form with the success message and "Replace" button
-                    const sectionId = docType + '-upload-section';
-                    const section = document.getElementById(sectionId);
-                    section.innerHTML = `
-                        <label class="block text-sm font-medium text-gray-700">${fileInput.parentElement.parentElement.querySelector('label').innerHTML}</label>
-                        <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
-                            <p class="text-sm text-green-800">File Uploaded: <span class="font-semibold">${fileInput.files[0].name}</span></p>
-                            <label for="id_${docType}_upload_replace" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
-                        </div>
-                        <form class="hidden-form" data-doc-type="${docType}"><input type="file" name="file" id="id_${docType}_upload_replace" class="hidden" required></form>
-                    `;
-                    // Re-bind the event listener for the new "Replace" input
-                    const newFileInput = document.getElementById(`id_${docType}_upload_replace`);
-                    const newForm = newFileInput.parentElement;
-                    handleReplace(newForm);
+                    location.reload();
                 } else {
                     alert('Upload failed. Please try again.');
                 }
@@ -173,36 +148,16 @@
                 }
             });
         };
-
-        if (submitButton) {
+        
+        if (formElement.classList.contains('hidden-form')) {
+            fileInput.addEventListener('change', uploadAction);
+        } else {
             formElement.addEventListener('submit', uploadAction);
         }
     }
 
-    function handleReplace(formElement) {
-        const fileInput = formElement.querySelector('input[type="file"]');
-        fileInput.addEventListener('change', (event) => {
-            // A simplified version of the upload action for the replace functionality
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', csrfToken);
-            formData.append('doc_type', formElement.dataset.docType);
-            formData.append('file', event.target.files[0]);
-            
-            fetch("{% url 'portal:work_employment_form' %}", { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert('File replaced successfully!');
-                    location.reload(); // Reload to show the updated file link
-                } else {
-                    alert('Replacement failed.');
-                }
-            });
-        });
-    }
-
-    document.querySelectorAll('form.upload-form').forEach(handleUpload);
-    document.querySelectorAll('form.hidden-form').forEach(handleReplace);
+    document.querySelectorAll('#form-upload-section form').forEach(handleUpload);
+    document.querySelectorAll('#cv-upload-section form').forEach(handleUpload);
 
     if (paymentBtn) {
         paymentBtn.addEventListener('click', function() {
@@ -226,17 +181,10 @@
                         paymentBtn.innerHTML = originalText;
                     },
                 });
-            })
-            .catch(error => {
-                console.error('Payment Error:', error);
-                alert('Could not initiate payment. Please try again.');
-                paymentBtn.disabled = false;
-                paymentBtn.innerHTML = originalText;
             });
         });
     }
     
-    // Check state on page load
-    checkPaymentButtonState();
+    document.addEventListener('DOMContentLoaded', checkPaymentButtonState);
 </script>
 {% endblock %}

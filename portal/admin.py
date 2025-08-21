@@ -5,10 +5,13 @@ from django.utils.html import format_html
 from django.urls import reverse
 from .models import (
     Application, Document, Payment, VisaUpdate, Testimonial, 
-    UserProfile, WorkApplication, Country
+    UserProfile, WorkApplication, Country, FeeStructure
 )
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group
+
+from django.contrib.sites.models import Site
+from django.contrib.sites.admin import SiteAdmin
 
 # --- Custom Admin Site ---
 class HadeyAdminSite(admin.AdminSite):
@@ -86,7 +89,38 @@ class ApplicationAdmin(admin.ModelAdmin): # Student Application Admin
     search_fields = ('user__username', 'full_name', 'email')
     ordering = ('-updated_at',)
     inlines = [StudentVisaUpdateInline, StudentDocumentInline, StudentPaymentInline]
-    # Fieldsets would need to be updated with all the new student fields
+    fieldsets = (
+        ('Fee Overrides (Optional)', {
+            'classes': ('collapse',),
+            'fields': ('custom_application_fee', 'custom_admission_fee', 'custom_agency_fee')
+        }),
+        ('Core Info', {'fields': ('user', 'status', 'visa_status', 'passport_photograph')}),
+        ('Personal Information', {
+            'classes': ('collapse',),
+            'fields': ('full_name', 'date_of_birth', 'place_of_birth', 'gender', 'nationality', 'address', 'city', 'postal_code', 'phone_number', 'email', 'passport_number', 'passport_issue_date', 'passport_expiry_date')
+        }),
+        ('Parent/Guardian Information', {
+            'classes': ('collapse',),
+            'fields': ('father_name', 'father_occupation', 'father_contact', 'mother_name', 'mother_occupation', 'mother_contact', 'guardian_name', 'guardian_relationship', 'guardian_contact')
+        }),
+        ('Academic Information', {
+            'classes': ('collapse',),
+            'fields': ('grade_level', 'preferred_program', 'previous_school', 'country_applying_from', 'country_of_interest', 'achievements')
+        }),
+        ('Emergency & Medical', {
+            'classes': ('collapse',),
+            'fields': ('emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_number', 'medical_conditions', 'allergies')
+        }),
+        ('Additional Info', {
+            'classes': ('collapse',),
+            'fields': ('how_did_you_hear', 'declaration_agreed')
+        }),
+        ('Timestamps', {
+            'classes': ('collapse',),
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    readonly_fields = ('created_at', 'updated_at')
 
 class WorkApplicationAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'email', 'status', 'destination_country', 'updated_at')
@@ -96,6 +130,10 @@ class WorkApplicationAdmin(admin.ModelAdmin):
     inlines = [WorkerVisaUpdateInline, WorkerDocumentInline, WorkerPaymentInline]
     
     fieldsets = (
+        ('Fee Override (Optional)', {
+            'classes': ('collapse',),
+            'fields': ('custom_application_fee',)
+        }),
         ('Core Info', {'fields': ('user', 'status', 'visa_status', 'passport_photograph')}),
         ('Personal Information', {'classes': ('collapse',), 'fields': ('full_name', 'gender', 'date_of_birth', 'place_of_birth', 'nationality', 'passport_number', 'passport_issue_date', 'passport_expiry_date', 'marital_status', 'current_address', 'contact_number', 'email')}),
         ('Employment & Visa Details', {'classes': ('collapse',), 'fields': ('job_title', 'sponsor', 'destination_country', 'applied_before', 'previous_application_details')}),
@@ -130,6 +168,9 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_filter = ('account_type',)
     search_fields = ('user__username',)
 
+class FeeStructureAdmin(admin.ModelAdmin):
+    list_display = ('get_fee_type_display', 'amount')
+
 # --- Registration ---
 hadey_admin_site.register(Application, ApplicationAdmin)
 hadey_admin_site.register(WorkApplication, WorkApplicationAdmin)
@@ -138,6 +179,8 @@ hadey_admin_site.register(Testimonial)
 hadey_admin_site.register(Document)
 hadey_admin_site.register(Payment)
 hadey_admin_site.register(UserProfile, UserProfileAdmin)
+hadey_admin_site.register(FeeStructure, FeeStructureAdmin) # ADDED THIS LINE
+
 
 # Re-register User to our custom site, unregistering the base one first
 try:
@@ -146,3 +189,4 @@ except admin.sites.NotRegistered:
     pass
 hadey_admin_site.register(User, UserAdmin)
 hadey_admin_site.register(Group)
+hadey_admin_site.register(Site, SiteAdmin)

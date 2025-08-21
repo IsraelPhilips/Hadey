@@ -23,7 +23,8 @@ class StudentApplicationForm(forms.ModelForm):
 
     class Meta:
         model = Application
-        exclude = ['user', 'status', 'visa_status', 'passport_photograph']
+        exclude = ['user', 'status', 'visa_status', 'passport_photograph',
+            'custom_application_fee', 'custom_admission_fee', 'custom_agency_fee']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'passport_issue_date': forms.DateInput(attrs={'type': 'date'}),
@@ -45,7 +46,7 @@ class StudentApplicationForm(forms.ModelForm):
         optional_fields = [
             'guardian_name', 'guardian_relationship', 'guardian_contact', 
             'achievements', 'medical_conditions', 'allergies', 'birth_certificate_upload',
-            'international_passport_upload', 'school_certificate_upload', 'passport_photograph_upload'
+            'international_passport_upload', 'school_certificate_upload', 'passport_photograph_upload', 'custom_application_fee', 'custom_admission_fee', 'custom_agency_fee'
         ]
         for field_name, field in self.fields.items():
             if field_name not in optional_fields:
@@ -59,7 +60,8 @@ class WorkApplicationForm(forms.ModelForm):
     work_experience_upload = forms.FileField(required=False, label="Work Experience Letters")
     class Meta:
         model = WorkApplication
-        exclude = ['user', 'status', 'visa_status', 'passport_photograph', 'job_offer_accepted']
+        exclude = ['user', 'status', 'visa_status', 'passport_photograph', 'job_offer_accepted',
+            'custom_application_fee']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'passport_issue_date': forms.DateInput(attrs={'type': 'date'}),
@@ -79,7 +81,7 @@ class WorkApplicationForm(forms.ModelForm):
 
         optional_fields = [
             'previous_application_details', 'skills_certifications', 'passport_photograph_upload', 'applied_before',
-            'educational_certificate_upload', 'work_experience_upload', 'international_passport_upload'
+            'educational_certificate_upload', 'work_experience_upload', 'international_passport_upload', 'custom_application_fee'
         ]
         for field_name, field in self.fields.items():
             if 'upload' not in field_name and field_name not in optional_fields:

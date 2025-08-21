@@ -37,24 +37,32 @@ def send_email_on_admin_upload(sender, instance, created, **kwargs):
         return
 
     user = None
-    dashboard_url = f"http://127.0.0.1:8000{reverse('portal:dashboard')}"
+    dashboard_url = f"http://127.0.0.1:8000{reverse('portal:dashboard')}" # Use your domain in production
     context = {'dashboard_url': dashboard_url}
     subject = ''
     template_name = ''
 
-    # Student Admission Letter
-    if instance.application and instance.document_type == Document.DocumentType.ADMISSION_LETTER:
+    # --- Student Path Notifications ---
+    if instance.application:
         user = instance.application.user
-        subject = 'Your Admission Letter is Ready!'
-        template_name = 'portal/emails/admission_letter_ready.txt'
         context['user'] = user
+        if instance.document_type == Document.DocumentType.ADMISSION_LETTER:
+            subject = 'Your Admission Letter is Ready!'
+            template_name = 'portal/emails/admission_letter_ready.txt'
+        elif instance.document_type == Document.DocumentType.BLANK_ADMISSION_FORM:
+            subject = 'Your Admission Form is Ready for Download'
+            template_name = 'portal/emails/admission_form_ready.txt'
 
-    # Worker Job Offer
-    elif instance.work_application and instance.document_type == Document.DocumentType.JOB_OFFER:
+    # --- Worker Path Notifications ---
+    elif instance.work_application:
         user = instance.work_application.user
-        subject = 'Your Job Offer is Ready!'
-        template_name = 'portal/emails/job_offer_ready.txt' # We need to create this template
         context['user'] = user
+        if instance.document_type == Document.DocumentType.JOB_OFFER:
+            subject = 'Your Job Offer is Ready!'
+            template_name = 'portal/emails/job_offer_ready.txt'
+        elif instance.document_type == Document.DocumentType.BLANK_EMPLOYMENT_FORM:
+            subject = 'Your Employment Form is Ready for Download'
+            template_name = 'portal/emails/employment_form_ready.txt'
 
     if user and subject and template_name:
         email_body = render_to_string(template_name, context)

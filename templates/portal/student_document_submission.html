@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load portal_extras %}
 {% block title %}Student Document Submission | Hadey Travels Global{% endblock %}
 
 {% block content %}
@@ -16,32 +17,46 @@
                     <div class="ml-4">
                         <h2 class="text-lg font-semibold text-dark-green">Download Your Admission Form</h2>
                         {% if admin_document %}
-                            <p class="text-sm text-gray-600 mt-1">The admin has provided the necessary form. Please download, print, fill it out completely, and scan it.</p>
+                            <p class="text-sm text-gray-600 mt-1">The admin has provided the necessary form for your application. Please download, print, fill it out completely, and scan it.</p>
                             <a href="{{ admin_document.file.url }}" download class="mt-3 inline-flex items-center px-4 py-2 bg-primary-green text-white font-semibold rounded-md hover:bg-dark-green text-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                 Download Form
                             </a>
                         {% else %}
-                            <p class="mt-2 text-sm text-amber-700 bg-amber-100 p-3 rounded-md">The admin has not uploaded your admission form yet. Please check back later.</p>
+                            <p class="mt-2 text-sm text-amber-700 bg-amber-100 p-3 rounded-md">The admin has not uploaded your admission form yet. Please check back later. You will be notified by email when it is ready.</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
             {% if admin_document %}
-            <div class="p-5 border rounded-lg bg-gray-50" id="uploadSection">
+            <div id="upload-section-container" class="p-5 border rounded-lg bg-gray-50">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-primary-green text-white font-bold text-lg">2</div>
                     <div class="ml-4 w-full">
                         <h2 class="text-lg font-semibold text-dark-green">Upload Your Completed Form</h2>
                         <p class="text-sm text-gray-600 mt-1">Once you have filled and scanned the form, upload the single PDF or image file here.</p>
-                        <form method="post" enctype="multipart/form-data" id="documentUploadForm" class="mt-3">
-                            {% csrf_token %}
-                            {{ form.file }}
-                            <p class="mt-2 text-sm text-red-600" id="upload-error"></p>
-                            <button type="submit" id="uploadBtn" class="mt-3 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-md font-medium text-white bg-accent-orange hover:bg-opacity-90">
-                                Upload Document
-                            </button>
-                        </form>
+                        {% with doc=existing_docs|get_item:doc_types.FILLED_ADMISSION_FORM %}
+                        {% if doc %}
+                            <div class="mt-3 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                <label for="id_filled_form_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                            </div>
+                            <form method="post" enctype="multipart/form-data" id="documentUploadForm" class="hidden">
+                                {% csrf_token %}
+                                <input type="file" name="file" id="id_filled_form_upload" class="hidden">
+                            </form>
+                        {% else %}
+                            <form method="post" enctype="multipart/form-data" id="documentUploadForm" class="mt-3">
+                                {% csrf_token %}
+                                {{ form.file }}
+                                <p class="mt-2 text-sm text-red-600" id="upload-error"></p>
+                                <button type="submit" id="uploadBtn" class="mt-3 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-md font-medium text-white bg-accent-orange hover:bg-opacity-90">
+                                    Upload Document
+                                </button>
+                            </form>
+                        {% endif %}
+                        {% endwith %}
                     </div>
                 </div>
             </div>
@@ -77,50 +92,70 @@
 <script src="https://checkout.flutterwave.com/v3.js"></script>
 <script>
     const uploadForm = document.getElementById('documentUploadForm');
-    const uploadBtn = document.getElementById('uploadBtn');
     const paymentBtn = document.getElementById('paymentBtn');
     const paymentSection = document.getElementById('paymentSection');
-    const uploadErrorEl = document.getElementById('upload-error');
     const consentCheckbox = document.getElementById('consent');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    let formUploaded = {{ existing_docs|get_item:doc_types.FILLED_ADMISSION_FORM|yesno:"true,false" }};
 
-    uploadForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        uploadBtn.disabled = true;
-        uploadBtn.innerHTML = 'Uploading...';
-        uploadErrorEl.textContent = '';
-        const formData = new FormData(uploadForm);
-        fetch("{% url 'portal:student_document_submission' %}", { method: 'POST', body: formData })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                uploadBtn.innerHTML = 'Re-upload Document';
-                uploadBtn.disabled = false;
-                if (paymentSection) {
-                    paymentSection.classList.remove('opacity-50');
-                }
-                alert('Document uploaded successfully!');
-            } else {
-                uploadErrorEl.textContent = data.errors?.file?.[0] || 'An error occurred during upload.';
-                uploadBtn.disabled = false;
-                uploadBtn.innerHTML = 'Upload Document';
+    function checkPaymentButtonState() {
+        if (paymentSection && formUploaded) {
+            paymentSection.classList.remove('opacity-50');
+            if (consentCheckbox) {
+                consentCheckbox.addEventListener('change', function() {
+                    paymentBtn.disabled = !this.checked;
+                    if (this.checked) {
+                        paymentBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                        paymentBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+                    } else {
+                        paymentBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        paymentBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+                    }
+                });
             }
-        });
-    });
+        }
+    }
+
+    if (uploadForm) {
+        const fileInput = uploadForm.querySelector('input[type="file"]');
+        const actionButton = uploadForm.querySelector('button[type="submit"]') || document.querySelector(`label[for="${fileInput.id}"]`);
+
+        const handleUpload = (event) => {
+            if (event.type === 'submit') {
+                event.preventDefault();
+            }
+            const button = uploadForm.querySelector('button[type="submit"]');
+            const originalBtnText = button ? button.innerHTML : null;
+            if(button) {
+                button.disabled = true;
+                button.innerHTML = '...';
+            }
+            
+            const formData = new FormData(uploadForm);
+            fetch("{% url 'portal:student_document_submission' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken }})
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Upload successful!');
+                    location.reload();
+                } else {
+                    alert('Upload failed. Please try again.');
+                    if(button) {
+                        button.disabled = false;
+                        button.innerHTML = originalBtnText;
+                    }
+                }
+            });
+        };
+        
+        if (uploadForm.classList.contains('hidden')) { // This is a "Replace" form
+            fileInput.addEventListener('change', handleUpload);
+        } else { // This is a visible upload form
+            uploadForm.addEventListener('submit', handleUpload);
+        }
+    }
 
     if (paymentBtn) {
-        consentCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                paymentBtn.disabled = false;
-                paymentBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                paymentBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
-            } else {
-                paymentBtn.disabled = true;
-                paymentBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-                paymentBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
-            }
-        });
-
         paymentBtn.addEventListener('click', function() {
             const originalText = paymentBtn.innerHTML;
             paymentBtn.disabled = true;
@@ -141,5 +176,7 @@
             });
         });
     }
+
+    document.addEventListener('DOMContentLoaded', checkPaymentButtonState);
 </script>
 {% endblock %}

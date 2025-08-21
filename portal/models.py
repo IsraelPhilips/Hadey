@@ -43,6 +43,10 @@ class Application(models.Model): # STUDENT Application
     status = models.CharField(max_length=50, choices=ApplicationStatus.choices, default=ApplicationStatus.STEP_1_APPLICATION_FORM)
     visa_status = models.CharField(max_length=50, choices=VisaStatus.choices, default=VisaStatus.NOT_STARTED)
     passport_photograph = models.ImageField(upload_to='passport_photos/', blank=True, null=True)
+
+    custom_application_fee = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Overrides the default student application fee (USD).")
+    custom_admission_fee = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Overrides the default admission fee (USD).")
+    custom_agency_fee = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Overrides the default total agency fee (USD).")
     
     passport_number = models.CharField(max_length=100, blank=True, null=True)
     passport_issue_date = models.DateField(blank=True, null=True)
@@ -107,6 +111,8 @@ class WorkApplication(models.Model):
     status = models.CharField(max_length=50, choices=WorkApplicationStatus.choices, default=WorkApplicationStatus.STEP_1_APPLICATION_FORM)
     visa_status = models.CharField(max_length=50, choices=VisaStatus.choices, default=VisaStatus.NOT_STARTED)
     passport_photograph = models.ImageField(upload_to='passport_photos/', blank=True, null=True)
+    custom_application_fee = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, help_text="Overrides the default work application fee (USD).")
+
     full_name = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=20, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
@@ -215,3 +221,21 @@ class Payment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"{self.purpose} - {self.status}"
+
+
+
+class FeeStructure(models.Model):
+    """
+    A model to store all application fees, manageable from the admin panel.
+    """
+    class FeeType(models.TextChoices):
+        STUDENT_APP_FEE = 'STUDENT_APP_FEE', 'Student Application Fee (USD)'
+        ADMISSION_FEE = 'ADMISSION_FEE', 'Student Admission Fee (USD)'
+        AGENCY_FEE = 'AGENCY_FEE', 'Student Agency Fee (USD)'
+        WORK_APP_FEE = 'WORK_APP_FEE', 'Work Application Fee (USD)'
+
+    fee_type = models.CharField(max_length=50, choices=FeeType.choices, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.get_fee_type_display()}: {self.amount}"

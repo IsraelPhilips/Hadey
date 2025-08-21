@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% load portal_extras %}
+{% block title %}Work Visa Application Form | Hadey Travels Global{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-accent-orange">
+        <form method="post" id="workApplicationForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-dark-green">Work Visa Application Form</h1>
+                <p class="text-gray-600 mt-2">Please fill out this form completely. Fields marked with <span class="text-red-500">*</span> are required.</p>
+                
+                <div class="mt-6">
+                    <label for="id_passport_photograph_upload" class="cursor-pointer">
+                        <div id="photo-preview" class="w-32 h-32 mx-auto rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 overflow-hidden">
+                            {% if form.instance.passport_photograph %}
+                                <img src="{{ form.instance.passport_photograph.url }}" alt="Passport Photograph" class="w-full h-full object-cover">
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            {% endif %}
+                        </div>
+                        <span class="mt-2 block text-sm font-medium text-primary-green hover:underline">Upload Passport Photograph <span class="text-red-500">*</span></span>
+                    </label>
+                    <input type="file" name="passport_photograph_upload" id="id_passport_photograph_upload" class="hidden" accept="image/*">
+                    <p class="form-error mt-1 text-sm text-red-600" data-for="passport_photograph_upload"></p>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <!-- Personal Information -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">1. Personal Information</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Full Name (as per passport) <span class="text-red-500">*</span></label>{{ form.full_name }}<p class="form-error mt-1 text-sm text-red-600" data-for="full_name"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Gender <span class="text-red-500">*</span></label>{{ form.gender }}<p class="form-error mt-1 text-sm text-red-600" data-for="gender"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Date of Birth <span class="text-red-500">*</span></label>{{ form.date_of_birth }}<p class="form-error mt-1 text-sm text-red-600" data-for="date_of_birth"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Place of Birth <span class="text-red-500">*</span></label>{{ form.place_of_birth }}<p class="form-error mt-1 text-sm text-red-600" data-for="place_of_birth"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Nationality <span class="text-red-500">*</span></label>{{ form.nationality }}<p class="form-error mt-1 text-sm text-red-600" data-for="nationality"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Number <span class="text-red-500">*</span></label>{{ form.passport_number }}<p class="form-error mt-1 text-sm text-red-600" data-for="passport_number"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Issue Date <span class="text-red-500">*</span></label>{{ form.passport_issue_date }}<p class="form-error mt-1 text-sm text-red-600" data-for="passport_issue_date"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Passport Expiry Date <span class="text-red-500">*</span></label>{{ form.passport_expiry_date }}<p class="form-error mt-1 text-sm text-red-600" data-for="passport_expiry_date"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Marital Status <span class="text-red-500">*</span></label>{{ form.marital_status }}<p class="form-error mt-1 text-sm text-red-600" data-for="marital_status"></p></div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Current Address <span class="text-red-500">*</span></label>{{ form.current_address }}<p class="form-error mt-1 text-sm text-red-600" data-for="current_address"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Contact Number <span class="text-red-500">*</span></label>{{ form.contact_number }}<p class="form-error mt-1 text-sm text-red-600" data-for="contact_number"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>{{ form.email }}<p class="form-error mt-1 text-sm text-red-600" data-for="email"></p></div>
+                    </div>
+                </div>
+
+                <!-- Employment & Visa Details -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">2. Employment & Visa Details</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Job Title/Position Applying For <span class="text-red-500">*</span></label>{{ form.job_title }}<p class="form-error mt-1 text-sm text-red-600" data-for="job_title"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Sponsor (Self, Father, etc.) <span class="text-red-500">*</span></label>{{ form.sponsor }}<p class="form-error mt-1 text-sm text-red-600" data-for="sponsor"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Country of Work Destination <span class="text-red-500">*</span></label>{{ form.destination_country }}<p class="form-error mt-1 text-sm text-red-600" data-for="destination_country"></p></div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Have you ever applied for a work visa before? <span class="text-red-500">*</span></label>
+                            <div class="mt-2 space-x-4">{{ form.applied_before }}</div>
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="applied_before"></p>
+                        </div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">If yes, provide details (Country, Year, Status)</label>{{ form.previous_application_details }}<p class="form-error mt-1 text-sm text-red-600" data-for="previous_application_details"></p></div>
+                    </div>
+                </div>
+                
+                <!-- Educational & Professional Background -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">3. Educational & Professional Background</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div><label class="block text-sm font-medium text-gray-700">Highest Educational Qualification <span class="text-red-500">*</span></label>{{ form.highest_qualification }}<p class="form-error mt-1 text-sm text-red-600" data-for="highest_qualification"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Field of Study <span class="text-red-500">*</span></label>{{ form.field_of_study }}<p class="form-error mt-1 text-sm text-red-600" data-for="field_of_study"></p></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Years of Work Experience <span class="text-red-500">*</span></label>{{ form.years_of_experience }}<p class="form-error mt-1 text-sm text-red-600" data-for="years_of_experience"></p></div>
+                        <div class="sm:col-span-2"><label class="block text-sm font-medium text-gray-700">Skills/Certifications Relevant to the Job</label>{{ form.skills_certifications }}<p class="form-error mt-1 text-sm text-red-600" data-for="skills_certifications"></p></div>
+                    </div>
+                </div>
+
+                <!-- Supporting Documents -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">4. Supporting Documents</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Passport Copy (Data Page) <span class="text-red-500">*</span></label>
+                            {% with doc=existing_docs|get_item:doc_types.INTERNATIONAL_PASSPORT %}
+                            {% if doc %}
+                                <div class="mt-1 flex flex-col md:flex-row items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                    <label for="id_international_passport_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                                </div>
+                                <input type="file" name="international_passport_upload" id="id_international_passport_upload" class="hidden">
+                            {% else %}
+                                {{ form.international_passport_upload }}
+                            {% endif %}
+                            {% endwith %}
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="international_passport_upload"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Educational Certificate (if any)</label>
+                            {% with doc=existing_docs|get_item:doc_types.SCHOOL_CERTIFICATE %}
+                            {% if doc %}
+                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                    <label for="id_educational_certificate_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                                </div>
+                                <input type="file" name="educational_certificate_upload" id="id_educational_certificate_upload" class="hidden">
+                            {% else %}
+                                {{ form.educational_certificate_upload }}
+                            {% endif %}
+                            {% endwith %}
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="educational_certificate_upload"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Work Experience Letters</label>
+                            {% with doc=existing_docs|get_item:doc_types.WORK_EXPERIENCE_LETTER %}
+                            {% if doc %}
+                                <div class="mt-1 flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                    <p class="text-sm text-green-800">File Uploaded: <a href="{{ doc.file.url }}" target="_blank" class="font-semibold underline">{{ doc.file.name|slice:"10:" }}</a></p>
+                                    <label for="id_work_experience_upload" class="cursor-pointer text-sm font-medium text-primary-green hover:underline">Replace</label>
+                                </div>
+                                <input type="file" name="work_experience_upload" id="id_work_experience_upload" class="hidden">
+                            {% else %}
+                                {{ form.work_experience_upload }}
+                            {% endif %}
+                            {% endwith %}
+                            <p class="form-error mt-1 text-sm text-red-600" data-for="work_experience_upload"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Declaration -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h2 class="text-xl font-semibold text-dark-green mb-4">5. Declaration</h2>
+                    <div class="flex items-start">
+                        {{ form.declaration_agreed }}
+                        <div class="ml-3 text-sm">
+                            <label for="id_declaration_agreed" class="font-medium text-gray-700">I hereby declare that all the information provided is true and accurate to the best of my knowledge. <span class="text-red-500">*</span></label>
+                        </div>
+                    </div>
+                    <p class="form-error mt-1 text-sm text-red-600" data-for="declaration_agreed"></p>
+                </div>
+            </div>
+
+            <div class="pt-8 flex flex-col sm:flex-row gap-4">
+                <button type="button" id="updateBtn" class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Update Information
+                </button>
+                
+                {% if not payment_made %}
+                <button type="submit" id="submitBtn" name="submit_payment" value="1" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
+                    Proceed to Payment ($30)
+                </button>
+                {% else %}
+                <button type="button" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-dark-green cursor-not-allowed">
+                    Application Fee Paid
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+    const photoInput = document.getElementById('id_passport_photograph_upload');
+    const photoPreview = document.getElementById('photo-preview');
+    photoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoPreview.innerHTML = `<img src="${e.target.result}" alt="Passport Photograph" class="w-full h-full object-cover">`;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    const form = document.getElementById('workApplicationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const updateBtn = document.getElementById('updateBtn');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const declarationCheckbox = document.getElementById('id_declaration_agreed');
+
+    function clearErrors() {
+        document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+    }
+
+    function displayErrors(errors) {
+        clearErrors();
+        for (const [field, error_list] of Object.entries(errors)) {
+            const errorEl = document.querySelector(`.form-error[data-for="${field}"]`);
+            if (errorEl) {
+                errorEl.textContent = error_list[0];
+            }
+        }
+    }
+
+    function handleFormSubmit(event, isPaymentFlow) {
+        event.preventDefault();
+        const button = isPaymentFlow ? submitBtn : updateBtn;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = isPaymentFlow ? 'Saving...' : 'Updating...';
+        
+        const formData = new FormData(form);
+        if (isPaymentFlow) {
+            formData.append('submit_payment', '1');
+        }
+
+        fetch("{% url 'portal:work_application_form' %}", { method: 'POST', body: formData, headers: {'X-CSRFToken': csrfToken} })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+            if (ok && data.success) {
+                if (isPaymentFlow) {
+                    button.innerHTML = 'Redirecting to Payment...';
+                    initiatePayment();
+                } else {
+                    alert('Information updated successfully!');
+                    location.reload();
+                }
+            } else {
+                throw data.errors || { __all__: ['An unknown error occurred.'] };
+            }
+        })
+        .catch(errors => {
+            displayErrors(errors);
+            button.disabled = false;
+            button.innerHTML = originalText;
+            if (isPaymentFlow) {
+                togglePaymentButtonState();
+            }
+        });
+    }
+
+    if (submitBtn) {
+        declarationCheckbox.addEventListener('change', togglePaymentButtonState);
+        submitBtn.addEventListener('click', (e) => handleFormSubmit(e, true));
+    }
+    updateBtn.addEventListener('click', (e) => handleFormSubmit(e, false));
+
+    function togglePaymentButtonState() {
+        if (!submitBtn) return;
+        submitBtn.disabled = !declarationCheckbox.checked;
+        if (declarationCheckbox.checked) {
+            submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.add('bg-primary-green', 'hover:bg-dark-green');
+        } else {
+            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            submitBtn.classList.remove('bg-primary-green', 'hover:bg-dark-green');
+        }
+    }
+    
+    function initiatePayment() {
+        const payload = { purpose: 'WORK_APP_FEE' };
+        fetch("{% url 'portal:initiate_payment' %}", {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }
+        })
+        .then(response => response.json())
+        .then(paymentData => {
+            FlutterwaveCheckout({
+                ...paymentData,
+                callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
+                onclose: function() {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Save and Proceed to Payment ($30)';
+                    togglePaymentButtonState();
+                },
+            });
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', togglePaymentButtonState);
+
+    document.querySelectorAll('label[for^="id_"]').forEach(label => {
+        if (label.textContent === 'Replace') {
+            const inputId = label.getAttribute('for');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('change', () => {
+                    updateBtn.click();
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

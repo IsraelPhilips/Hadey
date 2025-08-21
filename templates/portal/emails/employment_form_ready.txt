@@ -1,0 +1,12 @@
+Subject: Your Employment Form is Ready for Download
+
+Hi {{ user.username }},
+
+Good news! The next step in your application is ready.
+
+The employment form has been uploaded to your portal. Please log in to your dashboard to download the form, fill it out, and upload it back along with your Resume/CV to proceed to the next step.
+
+Dashboard Link: {{ dashboard_url }}
+
+Best regards,
+The HTG Team
