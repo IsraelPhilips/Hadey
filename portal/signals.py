@@ -83,7 +83,16 @@ def send_email_on_visa_update(sender, instance, created, **kwargs):
     """
     # We only care about newly created updates where the admin opted to send an email
     if created and instance.send_email_notification:
-        user = instance.application.user
+        user = None
+        if instance.application:
+            user = instance.application.user
+        elif instance.work_application:
+            user = instance.work_application.user
+        
+        # If we couldn't find a user, exit early
+        if not user:
+            return
+            
         dashboard_url = f"http://127.0.0.1:8000{reverse('portal:dashboard')}"
         
         context = {

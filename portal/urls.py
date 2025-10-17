@@ -24,4 +24,7 @@ urlpatterns = [
     # --- Generic Payment URLs ---
     path('payment/initiate/', views.initiate_payment, name='initiate_payment'),
     path('payment/callback/', views.flutterwave_webhook, name='payment_callback'),
+
+    # --- Admin PDF Generation URL ---
+    path('admins/pdf/<str:app_type>/<int:app_id>/', views.generate_pdf_view, name='generate_pdf'),
 ]

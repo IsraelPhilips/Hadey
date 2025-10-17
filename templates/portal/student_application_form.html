@@ -174,7 +174,7 @@
                 
                 {% if not payment_made %}
                 <button type="submit" id="submitBtn" name="submit_payment" value="1" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-400 cursor-not-allowed">
-                    Proceed to Payment
+                    Proceed to Payment (${{ application_fee_amount|floatformat:2 }})
                 </button>
                 {% else %}
                 <button type="button" disabled class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-dark-green cursor-not-allowed">
@@ -290,7 +290,7 @@
                 callback: function (data) { window.location.href = "{% url 'portal:dashboard' %}"; },
                 onclose: function() {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Proceed to Payment';
+                    submitBtn.innerHTML = 'Proceed to Payment (${{ application_fee_amount|floatformat:2 }})';
                     togglePaymentButtonState();
                 },
             });

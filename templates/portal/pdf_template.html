@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Application Details</title>
+    <style>
+        @page {
+            size: a4 portrait;
+            @frame {
+                left: 2cm;
+                right: 2cm;
+                top: 2cm;
+                bottom: 2cm;
+            }
+        }
+        body {
+            font-family: "Helvetica", "Arial", sans-serif;
+            font-size: 10pt;
+            color: #333;
+        }
+        h1 {
+            font-size: 24pt;
+            color: #225529; /* dark-green */
+            margin-bottom: 0;
+            text-align: center;
+        }
+        h2 {
+            font-size: 14pt;
+            color: #4AAB48; /* primary-green */
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header img {
+            max-height: 80px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-table td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+        .info-table td:first-child {
+            width: 35%;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <!-- NOTE: You must provide the full, absolute path to your logo on the server for the PDF to find it -->
+        <!-- Example: <img src="/home/hadeytra/hadey_travels_project/static/images/logo.png"> -->
+        <h1>{{ title }}</h1>
+    </div>
+
+    {% for section, data in sections.items %}
+    <h2>{{ section }}</h2>
+    <table class="info-table">
+        {% for key, value in data.items %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>{{ value|default:"N/A" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endfor %}
+
+</body>
+</html>

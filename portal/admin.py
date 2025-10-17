@@ -10,9 +10,6 @@ from .models import (
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group
 
-from django.contrib.sites.models import Site
-from django.contrib.sites.admin import SiteAdmin
-
 # --- Custom Admin Site ---
 class HadeyAdminSite(admin.AdminSite):
     site_title = 'Hadey Travels Global Site Admin'
@@ -84,7 +81,7 @@ class WorkerPaymentInline(admin.TabularInline):
 
 # --- ModelAdmins ---
 class ApplicationAdmin(admin.ModelAdmin): # Student Application Admin
-    list_display = ('user', 'full_name', 'email', 'status', 'visa_status', 'updated_at')
+    list_display = ('user', 'full_name', 'email', 'status', 'visa_status', 'updated_at', 'download_pdf_link')
     list_filter = ('status', 'visa_status', 'country_of_interest')
     search_fields = ('user__username', 'full_name', 'email')
     ordering = ('-updated_at',)
@@ -122,8 +119,13 @@ class ApplicationAdmin(admin.ModelAdmin): # Student Application Admin
     )
     readonly_fields = ('created_at', 'updated_at')
 
+    def download_pdf_link(self, obj):
+        url = reverse('portal:generate_pdf', args=['student', obj.id])
+        return format_html('<a href="{}" target="_blank">Print to PDF</a>', url)
+    download_pdf_link.short_description = 'Print PDF'
+
 class WorkApplicationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'email', 'status', 'destination_country', 'updated_at')
+    list_display = ('user', 'full_name', 'email', 'status', 'destination_country', 'updated_at', 'download_pdf_link')
     list_filter = ('status', 'destination_country')
     search_fields = ('user__username', 'full_name', 'email')
     ordering = ('-updated_at',)
@@ -142,6 +144,11 @@ class WorkApplicationAdmin(admin.ModelAdmin):
         ('Timestamps', {'classes': ('collapse',), 'fields': ('created_at', 'updated_at')}),
     )
     readonly_fields = ('created_at', 'updated_at')
+
+    def download_pdf_link(self, obj):
+        url = reverse('portal:generate_pdf', args=['work', obj.id])
+        return format_html('<a href="{}" target="_blank">Print to PDF</a>', url)
+    download_pdf_link.short_description = 'Print PDF'
 
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('name', 'processing_fee')
@@ -189,4 +196,3 @@ except admin.sites.NotRegistered:
     pass
 hadey_admin_site.register(User, UserAdmin)
 hadey_admin_site.register(Group)
-hadey_admin_site.register(Site, SiteAdmin)

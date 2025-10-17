@@ -1,18 +1,22 @@
 # portal/views.py
 
 import uuid
+from .utils import get_currency_context, is_nigerian_user
 import json
 import requests
 from decimal import Decimal
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.contrib.admin.views.decorators import staff_member_required
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 from .models import (
     UserProfile, Application, WorkApplication, Country, Document, 
     Payment, Testimonial, FeeStructure
@@ -73,6 +77,17 @@ def student_application_form_view(request):
         purpose=Payment.PaymentPurpose.STUDENT_APP_FEE, 
         status=Payment.PaymentStatus.SUCCESSFUL
     ).exists()
+    
+    # Get the default fee from the FeeStructure model
+    default_fee = FeeStructure.objects.filter(fee_type='STUDENT_APP_FEE').first()
+    default_fee_amount = default_fee.amount if default_fee else Decimal('15.00')
+
+    # Use the application's custom fee if it exists, otherwise use the default
+    application_fee_amount = application.custom_application_fee or default_fee_amount
+    
+    currency_context = get_currency_context(request, application_fee_amount)
+    
+    
 
     if request.method == 'POST':
         form = StudentApplicationForm(request.POST, request.FILES, instance=application)
@@ -114,8 +129,11 @@ def student_application_form_view(request):
     existing_docs = { doc.document_type: doc for doc in application.documents.all() }
     context = {
         'form': form, 'payment_made': payment_made,
-        'existing_docs': existing_docs, 'doc_types': Document.DocumentType
+        'existing_docs': existing_docs, 'doc_types': Document.DocumentType,
+        'application_fee_amount': application_fee_amount
     }
+
+    context.update(currency_context)
     return render(request, 'portal/student_application_form.html', context)
 
 @login_required
@@ -132,6 +150,14 @@ def student_document_submission_view(request):
         purpose=Payment.PaymentPurpose.ADMISSION_FEE, 
         status=Payment.PaymentStatus.SUCCESSFUL
     ).exists()
+    
+    default_fee = FeeStructure.objects.filter(fee_type='ADMISSION_FEE').first()
+    default_fee_amount = default_fee.amount if default_fee else Decimal('1000.00')
+
+    # Use the application's custom fee if it exists, otherwise use the default
+    admission_fee_amount = application.custom_admission_fee or default_fee_amount
+
+    currency_context = get_currency_context(request, admission_fee_amount)
 
     if request.method == 'POST':
         form = DocumentUploadForm(request.POST, request.FILES)
@@ -150,8 +176,10 @@ def student_document_submission_view(request):
     context = {
         'form': form, 'admin_document': admin_document, 
         'application': application, 'payment_made': payment_made,
-        'existing_docs': existing_docs, 'doc_types': Document.DocumentType
+        'existing_docs': existing_docs, 'doc_types': Document.DocumentType,
+        'admission_fee_amount': admission_fee_amount
     }
+    context.update(currency_context)
     return render(request, 'portal/student_document_submission.html', context)
 
 @login_required
@@ -166,10 +194,27 @@ def student_agency_fee_view(request):
         payment_status = 'full_paid'
     elif half_payment_count == 1:
         payment_status = 'half_paid'
+        
+    # Get the default fee from the FeeStructure model
+    default_fee = FeeStructure.objects.filter(fee_type='AGENCY_FEE').first()
+    default_fee_amount = default_fee.amount if default_fee else Decimal('500.00')
+
+    # Use the application's custom fee if it exists, otherwise use the default
+    total_agency_fee = application.custom_agency_fee or default_fee_amount
+    half_agency_fee = total_agency_fee * Decimal('0.50')
+
+    full_currency_context = get_currency_context(request, total_agency_fee)
+    half_currency_context = get_currency_context(request, half_agency_fee)
+
+    context.update({
+        'full_currency': full_currency_context,
+        'half_currency': half_currency_context,
+    })
 
     context = {
         'application': application, 'admission_letter': admission_letter,
-        'payment_status': payment_status
+        'payment_status': payment_status, 'total_agency_fee': total_agency_fee,  # Add total fee to context
+        'half_agency_fee': half_agency_fee 
     }
     return render(request, 'portal/student_agency_fee.html', context)
 
@@ -203,8 +248,8 @@ def worker_dashboard(request):
     application, _ = WorkApplication.objects.get_or_create(user=request.user)
     ALL_STEPS = [
         {'id': WorkApplication.WorkApplicationStatus.STEP_1_APPLICATION_FORM, 'title': 'Application Form', 'number': 1, 'url_name': 'portal:work_application_form'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM, 'title': 'Employment Form & 50% Fee', 'number': 2, 'url_name': 'portal:work_employment_form'},
-        {'id': WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER, 'title': 'Job Offer & Final Fee', 'number': 3, 'url_name': 'portal:work_job_offer'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_2_EMPLOYMENT_FORM, 'title': 'Employment Processing Form', 'number': 2, 'url_name': 'portal:work_employment_form'},
+        {'id': WorkApplication.WorkApplicationStatus.STEP_3_JOB_OFFER, 'title': 'Employment Offer Letter', 'number': 3, 'url_name': 'portal:work_job_offer'},
         {'id': WorkApplication.WorkApplicationStatus.STEP_4_VISA_APPLICATION, 'title': 'Visa Application', 'number': 4, 'url_name': 'portal:work_visa_application'},
     ]
     current_status = application.status
@@ -236,6 +281,16 @@ def work_application_form_view(request):
         purpose=Payment.PaymentPurpose.WORK_APP_FEE, 
         status=Payment.PaymentStatus.SUCCESSFUL
     ).exists()
+    
+    default_fee = FeeStructure.objects.filter(fee_type='WORK_APP_FEE').first()
+    default_fee_amount = default_fee.amount if default_fee else Decimal('30.00')
+
+    # Use the application's custom fee if it exists, otherwise use the default
+    application_fee_amount = application.custom_application_fee or default_fee_amount
+
+    currency_context = get_currency_context(request, application_fee_amount)
+
+    
     if request.method == 'POST':
         form = WorkApplicationForm(request.POST, request.FILES, instance=application)
         is_payment_submission = 'submit_payment' in request.POST
@@ -268,8 +323,10 @@ def work_application_form_view(request):
     existing_docs = { doc.document_type: doc for doc in application.documents.all() }
     context = {
         'form': form, 'payment_made': payment_made,
-        'existing_docs': existing_docs, 'doc_types': Document.DocumentType
+        'existing_docs': existing_docs, 'doc_types': Document.DocumentType,
+        'application_fee_amount': application_fee_amount 
     }
+    context.update(currency_context)
     return render(request, 'portal/work_application_form.html', context)
 
 @login_required
@@ -309,6 +366,9 @@ def work_employment_form_view(request):
         'fifty_percent_amount': fifty_percent_amount,
         'existing_docs': existing_docs, 'doc_types': Document.DocumentType
     }
+    if fifty_percent_amount:
+        currency_context = get_currency_context(request, fifty_percent_amount)
+        context.update(currency_context)
     return render(request, 'portal/work_employment_form.html', context)
 
 @login_required
@@ -333,12 +393,22 @@ def work_job_offer_view(request):
         total_fee = application.destination_country.processing_fee
         remaining_50_percent = total_fee * Decimal('0.50')
         remaining_25_percent = total_fee * Decimal('0.25')
+
+    
     context = {
         'application': application, 'job_offer': job_offer,
         'payment_status': payment_status, 
         'remaining_50_percent': remaining_50_percent,
         'remaining_25_percent': remaining_25_percent
     }
+
+    if remaining_50_percent:
+        full_currency_context = get_currency_context(request, remaining_50_percent)
+        half_currency_context = get_currency_context(request, remaining_25_percent)
+        context.update({
+            'full_currency': full_currency_context,
+            'half_currency': half_currency_context,
+        })
     return render(request, 'portal/work_job_offer.html', context)
 
 @login_required
@@ -375,6 +445,11 @@ def work_visa_application_view(request):
         'final_payment_needed': final_payment_needed,
         'final_25_percent_amount': final_25_percent_amount
     }
+
+    if final_25_percent_amount:
+        currency_context = get_currency_context(request, final_25_percent_amount)
+        context.update(currency_context)
+        
     return render(request, 'portal/work_visa_application.html', context)
 
 # --- Generic Payment & Webhook Views ---
@@ -408,7 +483,7 @@ def initiate_payment(request):
     if purpose == 'STUDENT_APP_FEE':
         # Use custom fee if available, otherwise use global default
         amount = application.custom_application_fee or fees.get('STUDENT_APP_FEE', Decimal('15.00'))
-        currency = 'NGN'
+        currency = 'USD'
         payment_purpose = Payment.PaymentPurpose.STUDENT_APP_FEE
     elif purpose == 'ADMISSION_FEE':
         amount = application.custom_admission_fee or fees.get('ADMISSION_FEE', Decimal('1000.00'))
@@ -444,6 +519,16 @@ def initiate_payment(request):
         return JsonResponse({'error': 'Invalid payment purpose'}, status=400)
 
     tx_ref = f"HTG-{request.user.id}-{uuid.uuid4().hex[:6].upper()}"
+
+    payment_currency = data.get('currency', 'USD')  # Get currency from frontend
+    if payment_currency == 'NGN':
+        from .utils import convert_usd_to_ngn
+        # Convert to NGN if user chose NGN payment
+        amount = convert_usd_to_ngn(amount)
+        currency = 'NGN'
+    else:
+        currency = 'USD'
+        
     Payment.objects.create(
         application=application, work_application=work_application,
         amount=amount, purpose=payment_purpose, tx_ref=tx_ref
@@ -514,3 +599,80 @@ def flutterwave_webhook(request):
     except (requests.RequestException, Payment.DoesNotExist) as e:
         pass
     return redirect('portal:dashboard')
+    
+    
+@staff_member_required
+def generate_pdf_view(request, app_type, app_id):
+    """
+    Generates a PDF summary for a given application.
+    """
+    template_path = 'portal/pdf_template.html'
+    context = {}
+
+    if app_type == 'student':
+        app = get_object_or_404(Application, id=app_id)
+        context['title'] = 'Student Application Summary'
+        context['sections'] = {
+            'Personal Information': {
+                'Full Name': app.full_name,
+                'Date of Birth': app.date_of_birth,
+                'Place of Birth': app.place_of_birth,
+                'Gender': app.gender,
+                'Nationality': app.nationality,
+                'Address': f"{app.address}, {app.city}, {app.postal_code}",
+                'Contact': f"{app.phone_number} / {app.email}",
+                'Passport Number': app.passport_number,
+                'Passport Issue Date': app.passport_issue_date,
+                'Passport Expiry Date': app.passport_expiry_date,
+            },
+            'Parent/Guardian Information': {
+                "Father's Details": f"{app.father_name} ({app.father_occupation}) - {app.father_contact}",
+                "Mother's Details": f"{app.mother_name} ({app.mother_occupation}) - {app.mother_contact}",
+            },
+            'Academic Information': {
+                'Grade/Level': app.grade_level,
+                'Preferred Program': app.preferred_program,
+                'Previous School': app.previous_school,
+                'Applying From': app.country_applying_from,
+                'Applying To': app.country_of_interest,
+            }
+        }
+    elif app_type == 'work':
+        app = get_object_or_404(WorkApplication, id=app_id)
+        context['title'] = 'Work Application Summary'
+        context['sections'] = {
+            'Personal Information': {
+                'Full Name': app.full_name,
+                'Date of Birth': app.date_of_birth,
+                'Place of Birth': app.place_of_birth,
+                'Gender': app.gender,
+                'Nationality': app.nationality,
+                'Marital Status': app.marital_status,
+                'Address': app.current_address,
+                'Contact': f"{app.contact_number} / {app.email}",
+            },
+            'Passport Information': {
+                'Passport Number': app.passport_number,
+                'Issue Date': app.passport_issue_date,
+                'Expiry Date': app.passport_expiry_date,
+            },
+            'Employment & Visa Details': {
+                'Applying For': app.job_title,
+                'Sponsor': app.sponsor,
+                'Destination Country': app.destination_country.name if app.destination_country else "N/A",
+            }
+        }
+    else:
+        return HttpResponse("Invalid application type", status=400)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="application_{app_type}_{app.user.username}.pdf"'
+    
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+

@@ -18,11 +18,18 @@
                     </a>
                 </div>
             {% elif payment_status == 'half_paid' %}
-                <p class="text-gray-600 mb-6 text-center">You have successfully made a half payment. Please complete the final payment to receive your admission letter.</p>
-                <div class="space-y-4">
-                    <button id="payBalanceBtn" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-primary-green hover:bg-dark-green">
-                        Pay Balance ($250)
-                    </button>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 text-center">
+                    <h2 class="text-xl font-bold text-blue-800 mb-2">Partial Payment Received</h2>
+                    <p class="text-gray-700 mb-4">You can now download your admission letter. Please complete the final payment to finalize your process.</p>
+                    
+                    <div class="mt-6 flex flex-col sm:flex-row sm:justify-center sm:space-x-4 space-y-4 sm:space-y-0">
+                        <a href="{{ admission_letter.file.url }}" download class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-primary-green text-white font-semibold rounded-md hover:bg-dark-green">
+                            Download Admission Letter
+                        </a>
+                        <button id="payBalanceBtn" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-accent-orange hover:bg-opacity-90">
+                            Pay Balance ($250)
+                        </button>
+                    </div>
                 </div>
             {% else %} <!-- payment_status == 'none' -->
                 <p class="text-gray-600 mb-6 text-center">Your admission letter is ready! To receive it, please complete the agency fee payment.</p>
